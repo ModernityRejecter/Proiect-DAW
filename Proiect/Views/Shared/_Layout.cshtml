@@ -1,50 +1,144 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Proiect</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - Online Shop</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Proiect.styles.css" asp-append-version="true" />
 </head>
-<body>
+
+@using Microsoft.AspNetCore.Identity
+@using Proiect.Models
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+        // DUMMY DATA
+        int wishlistCount = 2;
+        int cartCount = 5;
+}
+
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Proiect</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+        <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center me-auto me-lg-3" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-bag-heart-fill me-2"></i>
+                    <span class="d-none d-sm-inline">Online Shop</span>
+                    <span class="d-inline d-sm-none">Shop</span>
+                </a>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="d-flex align-items-center gap-3 me-3 d-lg-none">
+                        <a asp-controller="Wishlist" asp-action="Index" class="text-dark position-relative">
+                            <i class="bi bi-heart fs-4"></i>
+                            @if (wishlistCount > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count">
+                                    @wishlistCount
+                                </span>
+                            }
+                        </a>
+                        <a asp-controller="Cart" asp-action="Index" class="text-dark position-relative">
+                            <i class="bi bi-cart3 fs-4"></i>
+                            @if (cartCount > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary badge-count">
+                                    @cartCount
+                                </span>
+                            }
+                        </a>
+                    </div>
+                }
+
+                <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="navbar-collapse collapse mt-3 mt-lg-0">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Produse</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Categorii
+                            </a>
+                            <ul class="dropdown-menu border-0 shadow-sm">
+                                <li><a class="dropdown-item" href="#">Electronice</a></li>
+                                <li><a class="dropdown-item" href="#">Haine</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Index">Toate categoriile</a></li>
+                            </ul>
                         </li>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">Admin</a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Colaborator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-primary fw-bold" asp-controller="Products" asp-action="MyProposals">Propuneri</a>
+                            </li>
+                        }
                     </ul>
-                    <partial name="_LoginPartial" />
+
+                    <form class="d-flex my-3 my-lg-0 me-lg-3" role="search" asp-controller="Products" asp-action="Search" method="get">
+                        <div class="input-group w-100">
+                            <input class="form-control search-input shadow-none" type="search" name="searchString" placeholder="Caută..." aria-label="Search">
+                            <button class="btn search-btn text-muted" type="submit"><i class="bi bi-search"></i></button>
+                        </div>
+                    </form>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="d-none d-lg-flex align-items-center gap-3 me-3">
+                            <a asp-controller="Wishlist" asp-action="Index" class="text-dark position-relative" title="Wishlist">
+                                <i class="bi bi-heart fs-5"></i>
+                                @if (wishlistCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">@wishlistCount</span>
+                                }
+                            </a>
+                            <a asp-controller="Cart" asp-action="Index" class="text-dark position-relative" title="Coș Cumpărături">
+                                <i class="bi bi-cart3 fs-5"></i>
+                                @if (cartCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.6rem;">@cartCount</span>
+                                }
+                            </a>
+                        </div>
+                    }
+
+                    <div class="mt-2 mt-lg-0">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
+    <main role="main" class="container py-4">
+        @RenderBody()
+    </main>
+
+    <footer class="py-4 mt-auto text-center text-muted">
         <div class="container">
-            &copy; 2025 - Proiect - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <small>&copy; 2025 - Online Shop - Proiect Laborator ASP.NET Core</small>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
