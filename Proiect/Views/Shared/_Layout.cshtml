@@ -38,14 +38,18 @@
                             <i class="bi bi-heart fs-4"></i>
                             @if (wishlistCount > 0)
                             {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">@wishlistCount</span>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count">
+                                    @wishlistCount
+                                </span>
                             }
                         </a>
                         <a asp-controller="Cart" asp-action="Index" class="text-dark position-relative">
                             <i class="bi bi-cart3 fs-4"></i>
                             @if (cartCount > 0)
                             {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.5rem;">@cartCount</span>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary badge-count">
+                                    @cartCount
+                                </span>
                             }
                         </a>
                     </div>
