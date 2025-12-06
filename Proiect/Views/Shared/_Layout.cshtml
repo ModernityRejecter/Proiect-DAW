@@ -6,95 +6,57 @@
     <title>@ViewData["Title"] - Online Shop</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <style>
-        /* Stiluri Custom Inline pentru demo (le poți muta în site.css) */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            padding-top: 80px; /* Spațiu pentru navbar-ul fix */
-        }
-
-        /* Glassmorphism Navbar */
-        .navbar-custom {
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .navbar-brand {
-            font-weight: 700;
-            color: #4f46e5 !important; /* Indigo primary */
-            letter-spacing: -0.5px;
-        }
-
-        .nav-link {
-            font-weight: 500;
-            color: #4b5563;
-            transition: color 0.2s;
-        }
-
-            .nav-link:hover, .nav-link.active {
-                color: #4f46e5 !important;
-            }
-
-        /* Butoane rotunjite și smooth */
-        .btn-custom-primary {
-            background-color: #4f46e5;
-            color: white;
-            border-radius: 50px;
-            padding: 0.5rem 1.5rem;
-            transition: transform 0.2s;
-        }
-
-            .btn-custom-primary:hover {
-                background-color: #4338ca;
-                color: white;
-                transform: translateY(-1px);
-            }
-
-        .search-input {
-            border-radius: 20px 0 0 20px;
-            border: 1px solid #e5e7eb;
-            background-color: #f3f4f6;
-        }
-
-        .search-btn {
-            border-radius: 0 20px 20px 0;
-            border: 1px solid #e5e7eb;
-            border-left: none;
-            background-color: #f3f4f6;
-        }
-
-        /* Footer */
-        footer {
-            background-color: white;
-            border-top: 1px solid #e5e7eb;
-            margin-top: auto;
-        }
-    </style>
 </head>
+
+@using Microsoft.AspNetCore.Identity
+@using Proiect.Models
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+        // DUMMY DATA
+        int wishlistCount = 2;
+        int cartCount = 5;
+}
+
 <body class="d-flex flex-column min-vh-100">
     <header>
         <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-bag-heart-fill me-2"></i> Online Shop
+                <a class="navbar-brand d-flex align-items-center me-auto me-lg-3" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-bag-heart-fill me-2"></i>
+                    <span class="d-none d-sm-inline">Online Shop</span>
+                    <span class="d-inline d-sm-none">Shop</span>
                 </a>
 
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="d-flex align-items-center gap-3 me-3 d-lg-none">
+                        <a asp-controller="Wishlist" asp-action="Index" class="text-dark position-relative">
+                            <i class="bi bi-heart fs-4"></i>
+                            @if (wishlistCount > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">@wishlistCount</span>
+                            }
+                        </a>
+                        <a asp-controller="Cart" asp-action="Index" class="text-dark position-relative">
+                            <i class="bi bi-cart3 fs-4"></i>
+                            @if (cartCount > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.5rem;">@cartCount</span>
+                            }
+                        </a>
+                    </div>
+                }
+
+                <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse">
+                <div class="navbar-collapse collapse mt-3 mt-lg-0">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Produse</a>
@@ -115,48 +77,48 @@
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-danger" asp-controller="Admin" asp-action="Index">
-                                    <i class="bi bi-shield-lock"></i> Admin
-                                </a>
+                                <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">Admin</a>
                             </li>
                         }
 
                         @if (User.IsInRole("Colaborator"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-primary" asp-controller="Products" asp-action="MyProposals">
-                                    <i class="bi bi-pencil-square"></i> Propuneri
-                                </a>
+                                <a class="nav-link text-primary fw-bold" asp-controller="Products" asp-action="MyProposals">Propuneri</a>
                             </li>
                         }
                     </ul>
 
-                    <form class="d-flex me-3" role="search" asp-controller="Products" asp-action="Search" method="get">
-                        <div class="input-group">
-                            <input class="form-control search-input shadow-none" type="search" name="searchString" placeholder="Caută produs..." aria-label="Search">
+                    <form class="d-flex my-3 my-lg-0 me-lg-3" role="search" asp-controller="Products" asp-action="Search" method="get">
+                        <div class="input-group w-100">
+                            <input class="form-control search-input shadow-none" type="search" name="searchString" placeholder="Caută..." aria-label="Search">
                             <button class="btn search-btn text-muted" type="submit"><i class="bi bi-search"></i></button>
                         </div>
                     </form>
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <div class="d-flex align-items-center gap-3 me-3">
+                        <div class="d-none d-lg-flex align-items-center gap-3 me-3">
                             <a asp-controller="Wishlist" asp-action="Index" class="text-dark position-relative" title="Wishlist">
                                 <i class="bi bi-heart fs-5"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                    0
-                                </span>
+                                @if (wishlistCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">@wishlistCount</span>
+                                }
                             </a>
                             <a asp-controller="Cart" asp-action="Index" class="text-dark position-relative" title="Coș Cumpărături">
                                 <i class="bi bi-cart3 fs-5"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.6rem;">
-                                    0
-                                </span>
+                                @if (cartCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.6rem;">@cartCount</span>
+                                }
                             </a>
                         </div>
                     }
 
-                    <partial name="_LoginPartial" />
+                    <div class="mt-2 mt-lg-0">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
@@ -168,7 +130,7 @@
 
     <footer class="py-4 mt-auto text-center text-muted">
         <div class="container">
-            <small>&copy; 2024 - Online Shop - Proiect Laborator ASP.NET Core</small>
+            <small>&copy; 2025 - Online Shop - Proiect Laborator ASP.NET Core</small>
         </div>
     </footer>
 
