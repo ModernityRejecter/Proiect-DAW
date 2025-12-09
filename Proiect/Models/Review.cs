@@ -13,7 +13,7 @@ namespace Proiect.Models
         [StringLength(400, ErrorMessage = "Review description must be at most 400 characters long")]
         public string? Description { get; set; }
         
-        [Range(1, 5)]
+        [Range(1, 5, ErrorMessage = "Rating must be a value between 1 and 5")]
         public int? Rating { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
 
