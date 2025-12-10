@@ -4,6 +4,7 @@ namespace Proiect.Models
 {
     public class ProductFAQs
     {
+        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Question field is required")]

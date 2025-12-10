@@ -4,6 +4,7 @@ namespace Proiect.Models
 {
     public class Category
     {
+        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Category name field is required")]

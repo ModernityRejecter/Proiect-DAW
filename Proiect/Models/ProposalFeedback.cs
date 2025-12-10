@@ -5,16 +5,17 @@ namespace Proiect.Models
 {
     public class ProposalFeedback
     {
+        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage =  "Message is required")]
-        [StringLength(1000, ErrorMessage = "Message must be at most 1000 characters long")]
+        [StringLength(400, ErrorMessage = "Message must be at most 400 characters long")]
         public string Message { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
 
         //--------------------------------------------------------
         
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         public virtual ApplicationUser User { get; set;}
 

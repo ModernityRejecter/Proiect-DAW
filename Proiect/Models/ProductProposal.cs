@@ -4,6 +4,7 @@ namespace Proiect.Models
 {
     public class ProductProposal
     {
+        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Product name field is required")]
@@ -34,7 +35,7 @@ namespace Proiect.Models
 
         //-------------------------------------------------------------
 
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
 
         //-------------------------------------------------------------

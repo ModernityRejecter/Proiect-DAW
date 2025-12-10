@@ -6,6 +6,9 @@ namespace Proiect.Models
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
+        public virtual ICollection<ProductProposal> Proposals { get; set; } = new List<ProductProposal>();
+        public virtual ICollection<ProposalFeedback> Feedbacks { get; set; } = new List<ProposalFeedback>();
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     }
 }
