@@ -1,0 +1,48 @@
+﻿@model Proiect.Models.Category
+
+@{
+    ViewData["Title"] = "Adaugă categorie";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card shadow border-0 hover-effect">
+                <div class="card-body p-4">
+
+                    <h4 class="fw-bold text-brand mb-4">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Adaugă categorie
+                    </h4>
+
+                    <form asp-action="New" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Name" class="form-control" placeholder="Nume categorie" />
+                            <label asp-for="Name">Nume categorie</label>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                Anulează
+                            </a>
+
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> Salvează
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

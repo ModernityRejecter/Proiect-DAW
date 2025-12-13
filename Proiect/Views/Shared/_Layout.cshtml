@@ -13,6 +13,8 @@
 
 @using Microsoft.AspNetCore.Identity
 @using Proiect.Models
+@using Proiect.Data
+@inject ApplicationDbContext DbContext
 @inject UserManager<ApplicationUser> UserManager
 
 @{
@@ -62,19 +64,34 @@
 
                 <div class="navbar-collapse collapse mt-3 mt-lg-0">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Produse</a>
-                        </li>
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Categorii
+                                Produse
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm">
-                                <li><a class="dropdown-item" href="#">Electronice</a></li>
-                                <li><a class="dropdown-item" href="#">Haine</a></li>
+                                @{
+                                    var categories = DbContext.Categories.OrderBy(c => c.Name).ToList();
+                                }
+
+                                @foreach (var category in categories)
+                                {
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Products"
+                                           asp-action="Index"
+                                           asp-route-categoryId="@category.Id">
+                                            @category.Name
+                                        </a>
+                                    </li>
+                                }
+
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Index">Toate categoriile</a></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Products" asp-action="Index">
+                                        Toate produsele
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 

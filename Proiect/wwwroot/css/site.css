@@ -3,6 +3,11 @@ html {
     height: 100%;
 }
 
+:root {
+    --brand-purple: #4f46e5;
+    --brand-purple-soft: rgba(79, 70, 229, 0.12);
+}
+
 @media (min-width: 768px) {
     html {
         font-size: 16px;
@@ -232,4 +237,22 @@ footer {
         font-size: 0.9rem !important;
         padding: 5px 7px !important;
     }
+}
+
+
+.text-brand {
+    color: var(--brand-purple) !important;
+}
+
+.bg-brand-soft {
+    background-color: var(--brand-purple-soft) !important;
+}
+
+.hover-effect {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(79, 70, 229, 0.25) !important;
 }
