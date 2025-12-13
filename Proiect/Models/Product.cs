@@ -33,12 +33,12 @@ namespace Proiect.Models
         public string ImagePath { get; set; }
 
         //-------------------------------------------------------------
-        public int CategoryId { get; set; }
-        public virtual Category Category { get; set; }
+        public int? CategoryId { get; set; }
+        public virtual Category? Category { get; set; }
 
         //-------------------------------------------------------------
-        public int ProposalId { get; set; }
-        public virtual ProductProposal Proposal { get; set; }
+        public int? ProposalId { get; set; }
+        public virtual ProductProposal? Proposal { get; set; }
 
         //-------------------------------------------------------------
     }
