@@ -32,6 +32,10 @@ namespace Proiect.Data
                 .Property(p => p.Price)
                 .HasColumnType("decimal(18, 2)");
 
+            builder.Entity<ProductProposal>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18, 2)");
+
             // rezolvare problema la delete
             builder.Entity<Product>()
                 .HasOne(p => p.Proposal)

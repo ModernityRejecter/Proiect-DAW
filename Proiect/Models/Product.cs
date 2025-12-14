@@ -24,6 +24,7 @@ namespace Proiect.Models
         [Range(0, double.MaxValue, ErrorMessage = "Product stock must be a positive number")]
         public int Stock { get; set; }
 
+        // daca un produs n-are review-uri, rating-ul o sa fie null
         [Range(1, 5)]
         public double? Rating { get; set; } = null;
 
@@ -31,6 +32,9 @@ namespace Proiect.Models
         // nu ma convinge prea tare inserarea cailor pentru folosirea imaginilor dar momentan asta este
         [Required(ErrorMessage = "Product image path is required")]
         public string ImagePath { get; set; }
+
+        // cand stergem un produs, il dezactivam, un fel de soft delete
+        public bool IsActive { get; set; } = true;
 
         //-------------------------------------------------------------
         public int CategoryId { get; set; }

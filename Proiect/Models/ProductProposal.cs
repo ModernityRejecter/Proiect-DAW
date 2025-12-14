@@ -39,5 +39,9 @@ namespace Proiect.Models
         public virtual ApplicationUser User { get; set; }
 
         //-------------------------------------------------------------
+
+        public virtual ICollection<ProposalFeedback> Feedbacks { get; set; } = new List<ProposalFeedback>();
+
+        //-------------------------------------------------------------
     }
 }
