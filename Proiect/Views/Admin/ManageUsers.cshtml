@@ -1,0 +1,34 @@
+﻿@model IEnumerable<Proiect.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Administrare Useri";
+}
+
+<div class="container mt-4">
+    <h2>Administrare Utilizatori</h2>
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Nume</th>
+                <th>Prenume</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.LastName</td>
+                    <td>@user.FirstName</td>
+                    <td>
+                        <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Sigur ștergi acest user?');">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Șterge</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Înapoi</a>
+</div>

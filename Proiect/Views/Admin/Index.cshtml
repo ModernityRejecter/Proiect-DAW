@@ -1,0 +1,100 @@
+﻿@model Proiect.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 fw-bold text-brand">Admin Dashboard</h2>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Useri</h5>
+                    <h2 class="display-6 fw-bold">@Model.TotalUsers</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-box-seam me-2"></i>Produse</h5>
+                    <h2 class="display-6 fw-bold">@Model.TotalProducts</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-file-earmark-plus me-2"></i>Propuneri</h5>
+                    <h2 class="display-6 fw-bold">@Model.PendingProposals</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-cart-check me-2"></i>Comenzi</h5>
+                    <h2 class="display-6 fw-bold">@Model.TotalOrders</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="list-group shadow-sm">
+                <a href="#" class="list-group-item list-group-item-action active fw-bold">
+                    Meniu Rapid
+                </a>
+                <a asp-controller="Categories" asp-action="Index" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tags me-2"></i>Gestionează Categorii
+                </a>
+                <a asp-action="ManageUsers" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person-gear me-2"></i>Gestionează Useri
+                </a>
+                <a asp-action="ManageProposals" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-check-circle me-2"></i>Aprobare Produse</span>
+                    @if (Model.PendingProposals > 0)
+                    {
+                        <span class="badge bg-danger rounded-pill">@Model.PendingProposals</span>
+                    }
+                </a>
+                <a asp-action="ManageReviews" class="list-group-item list-group-item-action">
+                    <i class="bi bi-chat-left-quote me-2"></i>Moderează Recenzii
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white fw-bold">
+                    Ultimele Comenzi
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Data</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td>#@order.Id</td>
+                                    <td>@order.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@order.User?.Email</td>
+                                    <td><span class="badge bg-secondary">@order.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

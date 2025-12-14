@@ -256,7 +256,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.Category", b =>
@@ -277,7 +277,7 @@ namespace Proiect.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.Order", b =>
@@ -304,7 +304,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.OrderItem", b =>
@@ -333,7 +333,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.Product", b =>
@@ -381,7 +381,7 @@ namespace Proiect.Data.Migrations
                         .IsUnique()
                         .HasFilter("[ProposalId] IS NOT NULL");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.ProductFAQs", b =>
@@ -407,7 +407,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductFAQs");
+                    b.ToTable("ProductFAQs", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.ProductProposal", b =>
@@ -455,7 +455,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductProposals");
+                    b.ToTable("ProductProposals", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.ProposalFeedback", b =>
@@ -488,7 +488,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProposalFeedbacks");
+                    b.ToTable("ProposalFeedbacks", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.Review", b =>
@@ -526,7 +526,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.ShoppingCart", b =>
@@ -546,7 +546,7 @@ namespace Proiect.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ShoppingCarts");
+                    b.ToTable("ShoppingCarts", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.Wishlist", b =>
@@ -566,7 +566,7 @@ namespace Proiect.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wishlists");
+                    b.ToTable("Wishlists", (string)null);
                 });
 
             modelBuilder.Entity("Proiect.Models.WishlistItem", b =>
@@ -589,7 +589,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("WishlistId");
 
-                    b.ToTable("WishlistItems");
+                    b.ToTable("WishlistItems", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
