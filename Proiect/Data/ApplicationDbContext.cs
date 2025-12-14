@@ -41,8 +41,8 @@ namespace Proiect.Data
 
             builder.Entity<ProposalFeedback>()
                 .HasOne(p => p.Proposal)
-                .WithOne()
-                .HasForeignKey<ProposalFeedback>(p => p.ProposalId)
+                .WithMany(collection => collection.Feedbacks)
+                .HasForeignKey(p => p.ProposalId)
                 .OnDelete(DeleteBehavior.NoAction);
         }
 

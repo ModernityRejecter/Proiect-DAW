@@ -25,7 +25,7 @@ namespace Proiect.Models
         public int Stock { get; set; }
 
         [Range(1, 5)]
-        public double Rating { get; set; }
+        public double? Rating { get; set; } = null;
 
         // posibil sa o fac colectie pentru a stoca mai multe cai pentru imagini
         // nu ma convinge prea tare inserarea cailor pentru folosirea imaginilor dar momentan asta este
@@ -34,7 +34,7 @@ namespace Proiect.Models
 
         //-------------------------------------------------------------
         public int? CategoryId { get; set; }
-        public virtual Category? Category { get; set; }
+        public virtual Category Category { get; set; }
 
         //-------------------------------------------------------------
         public int? ProposalId { get; set; }
