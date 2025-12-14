@@ -74,6 +74,22 @@ namespace Proiect.Data
 
 
 ========================================
+FILE: Models\AdminDashboardViewModel.cs
+========================================
+
+﻿namespace Proiect.Models
+{
+    public class AdminDashboardViewModel
+    {
+        public int TotalUsers { get; set; }
+        public int TotalProducts { get; set; }
+        public int TotalOrders { get; set; }
+        public int PendingProposals { get; set; }
+        public List<Order> RecentOrders { get; set; } = new List<Order>();
+    }
+}
+
+========================================
 FILE: Models\ApplicationUser.cs
 ========================================
 
@@ -603,6 +619,265 @@ FILE: Models\WishlistItem.cs
 
 
 ========================================
+FILE: Controllers\AdminController.cs
+========================================
+
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Proiect.Data;
+using Proiect.Models;
+
+namespace Proiect.Controllers
+{
+    [Authorize(Roles = "Admin")]
+    public class AdminController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public AdminController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var viewModel = new AdminDashboardViewModel
+            {
+                TotalUsers = await _userManager.Users.CountAsync(),
+                TotalProducts = await _context.Products.CountAsync(),
+                TotalOrders = await _context.Orders.CountAsync(),
+                PendingProposals = await _context.ProductProposals.CountAsync(p => p.Status == "Pending"),
+                RecentOrders = await _context.Orders
+                                    .Include(o => o.User)
+                                    .OrderByDescending(o => o.Date)
+                                    .Take(5)
+                                    .ToListAsync()
+            };
+
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> ManageUsers()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            return View(users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                await _userManager.DeleteAsync(user);
+                TempData["message"] = "Utilizatorul a fost șters.";
+            }
+            return RedirectToAction("ManageUsers");
+        }
+
+        public async Task<IActionResult> ManageReviews()
+        {
+            var reviews = await _context.Reviews
+                                        .Include(r => r.User)
+                                        .Include(r => r.Product)
+                                        .OrderByDescending(r => r.Date)
+                                        .ToListAsync();
+            return View(reviews);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteReview(int id)
+        {
+            var review = await _context.Reviews.FindAsync(id);
+            if (review != null)
+            {
+                _context.Reviews.Remove(review);
+                await _context.SaveChangesAsync();
+                TempData["message"] = "Recenzia a fost ștearsă.";
+            }
+            return RedirectToAction("ManageReviews");
+        }
+
+        public async Task<IActionResult> ManageProposals()
+        {
+            var proposals = await _context.ProductProposals
+                                          .Include(p => p.User)
+                                          .Include(p => p.Category)
+                                          .Where(p => p.Status == "Pending")
+                                          .ToListAsync();
+            return View(proposals);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveProposal(int id)
+        {
+            var proposal = await _context.ProductProposals.FindAsync(id);
+            if (proposal == null) return NotFound();
+
+            var newProduct = new Product
+            {
+                Name = proposal.Name,
+                Description = proposal.Description,
+                Price = (decimal)proposal.Price,
+                Stock = proposal.Stock,
+                ImagePath = proposal.ImagePath,
+                CategoryId = proposal.CategoryId,
+                ProposalId = proposal.Id,
+                Rating = 0
+            };
+
+            _context.Products.Add(newProduct);
+            proposal.Status = "Approved";
+
+            await _context.SaveChangesAsync();
+            TempData["message"] = "Produsul a fost aprobat și publicat.";
+            return RedirectToAction("ManageProposals");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectProposal(int id)
+        {
+            var proposal = await _context.ProductProposals.FindAsync(id);
+            if (proposal != null)
+            {
+                proposal.Status = "Rejected";
+                await _context.SaveChangesAsync();
+                TempData["message"] = "Propunerea a fost respinsă.";
+            }
+            return RedirectToAction("ManageProposals");
+        }
+    }
+}
+
+========================================
+FILE: Controllers\CategoriesController.cs
+========================================
+
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Proiect.Data;
+using Proiect.Models;
+using System.Linq;
+
+
+namespace Proiect.Controllers
+{
+    [Authorize(Roles = "Admin")]
+    public class CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager) : Controller
+    {
+        private readonly ApplicationDbContext db = context;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+
+        public ActionResult Index()
+        {
+            if (TempData.ContainsKey("message"))
+            {
+                ViewBag.message = TempData["message"]?.ToString();
+            }
+
+            var categories = from category in db.Categories
+                             orderby category.Name
+                             select category;
+            ViewBag.Categories = categories;
+            return View();
+        }
+
+        public ActionResult Show(int id)
+        {
+            Category? category = db.Categories.Find(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        public ActionResult New()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult New(Category cat)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Categories.Add(cat);
+                db.SaveChanges();
+                TempData["message"] = "Categoria a fost adaugata";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return View(cat);
+            }
+        }
+
+        public ActionResult Edit(int id)
+        {
+            Category? category = db.Categories.Find(id);
+
+            if (category is null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        [HttpPost]
+        public ActionResult Edit(int id, Category requestCategory)
+        {
+            Category? category = db.Categories.Find(id);
+
+            if (category is null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                category.Name = requestCategory.Name;
+                db.SaveChanges();
+                TempData["message"] = "Categoria a fost modificata!";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return View(requestCategory);
+            }
+        }
+
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            Category? category = db.Categories.Find(id);
+
+            if (category is null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                db.Categories.Remove(category);
+                TempData["message"] = "Categoria a fost stearsa";
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+        }
+    }
+}
+
+========================================
 FILE: Controllers\HomeController.cs
 ========================================
 
@@ -656,6 +931,482 @@ FILE: Views\_ViewStart.cshtml
 ﻿@{
     Layout = "_Layout";
 }
+
+
+========================================
+FILE: Views\Admin\Index.cshtml
+========================================
+
+﻿@model Proiect.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 fw-bold text-brand">Admin Dashboard</h2>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Useri</h5>
+                    <h2 class="display-6 fw-bold">@Model.TotalUsers</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-box-seam me-2"></i>Produse</h5>
+                    <h2 class="display-6 fw-bold">@Model.TotalProducts</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-file-earmark-plus me-2"></i>Propuneri</h5>
+                    <h2 class="display-6 fw-bold">@Model.PendingProposals</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-cart-check me-2"></i>Comenzi</h5>
+                    <h2 class="display-6 fw-bold">@Model.TotalOrders</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="list-group shadow-sm">
+                <a href="#" class="list-group-item list-group-item-action active fw-bold">
+                    Meniu Rapid
+                </a>
+                <a asp-controller="Categories" asp-action="Index" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tags me-2"></i>Gestionează Categorii
+                </a>
+                <a asp-action="ManageUsers" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person-gear me-2"></i>Gestionează Useri
+                </a>
+                <a asp-action="ManageProposals" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-check-circle me-2"></i>Aprobare Produse</span>
+                    @if (Model.PendingProposals > 0)
+                    {
+                        <span class="badge bg-danger rounded-pill">@Model.PendingProposals</span>
+                    }
+                </a>
+                <a asp-action="ManageReviews" class="list-group-item list-group-item-action">
+                    <i class="bi bi-chat-left-quote me-2"></i>Moderează Recenzii
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white fw-bold">
+                    Ultimele Comenzi
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Data</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td>#@order.Id</td>
+                                    <td>@order.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@order.User?.Email</td>
+                                    <td><span class="badge bg-secondary">@order.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+========================================
+FILE: Views\Admin\ManageProposals.cshtml
+========================================
+
+﻿@model IEnumerable<Proiect.Models.ProductProposal>
+@{
+    ViewData["Title"] = "Aprobare Produse";
+}
+
+<div class="container mt-4">
+    <h2>Propuneri de Produse (Pending)</h2>
+    @if (TempData["message"] != null)
+    {
+        <div class="alert alert-success">@TempData["message"]</div>
+    }
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@item.ImagePath" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: contain;">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <p class="card-text text-truncate">@item.Description</p>
+                        <p class="mb-1"><strong>Preț:</strong> @item.Price RON</p>
+                        <p class="mb-1"><strong>Stoc:</strong> @item.Stock</p>
+                        <p class="mb-1"><strong>Categorie:</strong> @item.Category?.Name</p>
+                        <small class="text-muted">Propus de: @item.User?.Email</small>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
+                        <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i> Aprobă</button>
+                        </form>
+                        <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i> Respinge</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    @if (!Model.Any())
+    {
+        <p class="mt-4 text-center text-muted">Nu există propuneri în așteptare.</p>
+    }
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">Înapoi la Dashboard</a>
+    </div>
+</div>
+
+========================================
+FILE: Views\Admin\ManageReviews.cshtml
+========================================
+
+﻿@model IEnumerable<Proiect.Models.Review>
+@{
+    ViewData["Title"] = "Moderare Recenzii";
+}
+
+<div class="container mt-4">
+    <h2>Moderare Recenzii</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Produs</th>
+                <th>Utilizator</th>
+                <th>Rating</th>
+                <th>Comentariu</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var review in Model)
+            {
+                <tr>
+                    <td>@review.Date.ToString("dd/MM/yyyy")</td>
+                    <td>@review.Product?.Name</td>
+                    <td>@review.User?.Email</td>
+                    <td>@review.Rating <i class="bi bi-star-fill text-warning"></i></td>
+                    <td>
+                        <strong>@review.Title</strong><br />
+                        @review.Description
+                    </td>
+                    <td>
+                        <form asp-action="DeleteReview" asp-route-id="@review.Id" method="post" onsubmit="return confirm('Ștergi recenzia?');">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Înapoi</a>
+</div>
+
+========================================
+FILE: Views\Admin\ManageUsers.cshtml
+========================================
+
+﻿@model IEnumerable<Proiect.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Administrare Useri";
+}
+
+<div class="container mt-4">
+    <h2>Administrare Utilizatori</h2>
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Nume</th>
+                <th>Prenume</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.LastName</td>
+                    <td>@user.FirstName</td>
+                    <td>
+                        <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Sigur ștergi acest user?');">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Șterge</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Înapoi</a>
+</div>
+
+========================================
+FILE: Views\Categories\Edit.cshtml
+========================================
+
+﻿@model Proiect.Models.Category
+
+@{
+    ViewData["Title"] = "Editare categorie";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card shadow border-0 hover-effect">
+                <div class="card-body p-4">
+
+                    <h4 class="fw-bold text-brand mb-4">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Editare categorie
+                    </h4>
+
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Name" class="form-control" placeholder="Nume categorie" />
+                            <label asp-for="Name">Nume categorie</label>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                Anulează
+                            </a>
+
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> Actualizează
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+
+========================================
+FILE: Views\Categories\Index.cshtml
+========================================
+
+﻿@{
+    ViewData["Title"] = "Categorii";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold text-brand">Gestionare Categorii</h2>
+        <a asp-action="New" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> Adaugă Categorie
+        </a>
+    </div>
+
+    @if (ViewBag.message != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @ViewBag.message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var category in ViewBag.Categories)
+        {
+            <div class="col">
+                <div class="card h-100 shadow border-0 hover-effect">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 bg-light rounded-top">
+                        <div class="bg-brand-soft p-3 rounded-circle shadow-sm mb-3">
+                            <i class="bi bi-tags text-brand fs-2"></i>
+                        </div>
+                        <h5 class="card-title fw-bold text-dark mb-0">@category.Name</h5>
+                    </div>
+
+                    <div class="card-footer bg-white border-top-0 p-3">
+                        <div class="d-grid gap-2">
+                            <a asp-action="Show" asp-route-id="@category.Id"
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i> Detalii
+                            </a>
+
+                            <div class="d-flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@category.Id"
+                                   class="btn btn-outline-primary w-50" title="Editează">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <form method="post" asp-action="Delete" asp-route-id="@category.Id" class="w-50">
+                                    <button type="submit"
+                                            class="btn btn-outline-danger w-100"
+                                            onclick="return confirm('Ești sigur?');">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+========================================
+FILE: Views\Categories\New.cshtml
+========================================
+
+﻿@model Proiect.Models.Category
+
+@{
+    ViewData["Title"] = "Adaugă categorie";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card shadow border-0 hover-effect">
+                <div class="card-body p-4">
+
+                    <h4 class="fw-bold text-brand mb-4">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Adaugă categorie
+                    </h4>
+
+                    <form asp-action="New" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Name" class="form-control" placeholder="Nume categorie" />
+                            <label asp-for="Name">Nume categorie</label>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                Anulează
+                            </a>
+
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> Salvează
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+
+========================================
+FILE: Views\Categories\Show.cshtml
+========================================
+
+﻿@model Proiect.Models.Category
+
+@{
+    ViewData["Title"] = "Detalii categorie";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="card shadow border-0 hover-effect">
+                <div class="card-body text-center py-5">
+
+                    <div class="bg-brand-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                         style="width: 90px; height: 90px;">
+                        <i class="bi bi-tags text-brand fs-1"></i>
+                    </div>
+
+                    <h6 class="text-uppercase text-muted mb-2" style="letter-spacing: 2px;">
+                        Categorie
+                    </h6>
+
+                    <h1 class="fw-bold text-dark mb-4">
+                        @Model.Name
+                    </h1>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left me-2"></i> Înapoi
+                        </a>
+
+                        <a asp-action="Edit" asp-route-id="@Model.Id"
+                           class="btn btn-outline-primary px-4">
+                            <i class="bi bi-pencil-square me-2"></i> Editează
+                        </a>
+
+                        <form method="post"
+                              asp-action="Delete"
+                              asp-route-id="@Model.Id"
+                              onsubmit="return confirm('Sigur vrei să ștergi această categorie?');">
+                            <button type="submit" class="btn btn-outline-danger px-4">
+                                <i class="bi bi-trash me-2"></i> Șterge
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 
 ========================================
@@ -734,6 +1485,8 @@ FILE: Views\Shared\_Layout.cshtml
 
 @using Microsoft.AspNetCore.Identity
 @using Proiect.Models
+@using Proiect.Data
+@inject ApplicationDbContext DbContext
 @inject UserManager<ApplicationUser> UserManager
 
 @{
@@ -783,19 +1536,34 @@ FILE: Views\Shared\_Layout.cshtml
 
                 <div class="navbar-collapse collapse mt-3 mt-lg-0">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Produse</a>
-                        </li>
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Categorii
+                                Produse
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm">
-                                <li><a class="dropdown-item" href="#">Electronice</a></li>
-                                <li><a class="dropdown-item" href="#">Haine</a></li>
+                                @{
+                                    var categories = DbContext.Categories.OrderBy(c => c.Name).ToList();
+                                }
+
+                                @foreach (var category in categories)
+                                {
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Products"
+                                           asp-action="Index"
+                                           asp-route-categoryId="@category.Id">
+                                            @category.Name
+                                        </a>
+                                    </li>
+                                }
+
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Index">Toate categoriile</a></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Products" asp-action="Index">
+                                        Toate produsele
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
@@ -988,3 +1756,266 @@ FILE: Views\Shared\_ValidationScriptsPartial.cshtml
 ﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 
+
+========================================
+FILE: wwwroot/css\site.css
+========================================
+
+html {
+    font-size: 14px;
+    height: 100%;
+}
+
+:root {
+    --brand-purple: #4f46e5;
+    --brand-purple-soft: rgba(79, 70, 229, 0.12);
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f8f9fa;
+    padding-top: 80px;
+    margin-bottom: 0;
+    height: 100%;
+}
+
+a {
+    color: #4f46e5;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+    a:hover {
+        color: #3730a3;
+    }
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+    border-color: #4f46e5;
+}
+
+.navbar-custom {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: #4f46e5 !important;
+    letter-spacing: -0.5px;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    color: #4b5563;
+    transition: color 0.2s;
+}
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link.active {
+        color: #4f46e5 !important;
+    }
+
+.btn-primary {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: #ffffff !important;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active,
+    .btn-primary.active {
+        background-color: #4338ca !important;
+        border-color: #4338ca !important;
+        box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25) !important;
+    }
+
+.btn-custom-primary {
+    background-color: #4f46e5;
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    transition: transform 0.2s, background-color 0.2s;
+    border: none;
+}
+
+    .btn-custom-primary:hover {
+        background-color: #4338ca;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-primary {
+    color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+}
+
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+        background-color: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #4f46e5 !important;
+    }
+
+.btn-danger {
+    background-color: transparent !important;
+    border: 2px solid #ef4444 !important;
+    color: #ef4444 !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .btn-danger:hover {
+        background-color: #ef4444 !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+form + .btn-danger,
+form + p > .btn-danger,
+.btn-primary + .btn-danger {
+    margin-top: 1.5rem !important;
+    display: inline-block;
+}
+
+@media (min-width: 768px) {
+    form + .btn-danger,
+    form + p > .btn-danger {
+        margin-top: 1rem;
+    }
+}
+
+.search-input {
+    border-radius: 20px 0 0 20px;
+    border: 1px solid #e5e7eb;
+    background-color: #f3f4f6;
+}
+
+.search-btn {
+    border-radius: 0 20px 20px 0;
+    border: 1px solid #e5e7eb;
+    border-left: none;
+    background-color: #f3f4f6;
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+.form-floating > .form-control:disabled ~ label,
+.form-floating > .form-control[readonly] ~ label {
+    background-color: transparent !important;
+    opacity: 1;
+}
+
+    .form-floating > .form-control:disabled ~ label::after,
+    .form-floating > .form-control[readonly] ~ label::after {
+        background-color: transparent !important;
+    }
+
+.form-floating > .form-control:disabled,
+.form-floating > .form-control[readonly] {
+    background-color: #e9ecef !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+}
+
+.nav-pills .nav-link {
+    color: #4b5563;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+}
+
+    .nav-pills .nav-link:hover:not(.active) {
+        color: #4f46e5;
+        background-color: rgba(79, 70, 229, 0.1);
+        transform: translateX(5px);
+    }
+
+.navbar .badge.bg-danger,
+.navbar .badge.bg-primary {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+footer {
+    background-color: white;
+    border-top: 1px solid #e5e7eb;
+    width: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: rgba(255, 255, 255, 0.98);
+        padding: 1rem;
+        border-radius: 1rem;
+        margin-top: 10px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+        .navbar-collapse .bi-heart,
+        .navbar-collapse .bi-cart3 {
+            display: none;
+        }
+}
+
+.navbar .badge-count {
+    font-size: 0.75rem !important;
+    padding: 4px 6px !important;
+}
+
+@media (max-width: 991.98px) {
+    .navbar .badge-count {
+        font-size: 0.9rem !important;
+        padding: 5px 7px !important;
+    }
+}
+
+
+.text-brand {
+    color: var(--brand-purple) !important;
+}
+
+.bg-brand-soft {
+    background-color: var(--brand-purple-soft) !important;
+}
+
+.hover-effect {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(79, 70, 229, 0.25) !important;
+}
