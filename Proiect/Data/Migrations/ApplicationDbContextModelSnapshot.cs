@@ -8,7 +8,7 @@ using Proiect.Data;
 
 #nullable disable
 
-namespace Proiect.Data.Migrations
+namespace Proiect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -256,7 +256,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("CartItems", (string)null);
+                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("Proiect.Models.Category", b =>
@@ -277,7 +277,7 @@ namespace Proiect.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Proiect.Models.Order", b =>
@@ -304,7 +304,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Proiect.Models.OrderItem", b =>
@@ -333,7 +333,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("Proiect.Models.Product", b =>
@@ -344,7 +344,7 @@ namespace Proiect.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -355,6 +355,9 @@ namespace Proiect.Data.Migrations
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -367,7 +370,7 @@ namespace Proiect.Data.Migrations
                     b.Property<int?>("ProposalId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Rating")
+                    b.Property<double?>("Rating")
                         .HasColumnType("float");
 
                     b.Property<int>("Stock")
@@ -381,7 +384,7 @@ namespace Proiect.Data.Migrations
                         .IsUnique()
                         .HasFilter("[ProposalId] IS NOT NULL");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Proiect.Models.ProductFAQs", b =>
@@ -407,7 +410,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductFAQs", (string)null);
+                    b.ToTable("ProductFAQs");
                 });
 
             modelBuilder.Entity("Proiect.Models.ProductProposal", b =>
@@ -435,8 +438,8 @@ namespace Proiect.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -455,7 +458,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductProposals", (string)null);
+                    b.ToTable("ProductProposals");
                 });
 
             modelBuilder.Entity("Proiect.Models.ProposalFeedback", b =>
@@ -483,12 +486,11 @@ namespace Proiect.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProposalId")
-                        .IsUnique();
+                    b.HasIndex("ProposalId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProposalFeedbacks", (string)null);
+                    b.ToTable("ProposalFeedbacks");
                 });
 
             modelBuilder.Entity("Proiect.Models.Review", b =>
@@ -526,7 +528,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Proiect.Models.ShoppingCart", b =>
@@ -546,7 +548,7 @@ namespace Proiect.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ShoppingCarts", (string)null);
+                    b.ToTable("ShoppingCarts");
                 });
 
             modelBuilder.Entity("Proiect.Models.Wishlist", b =>
@@ -566,7 +568,7 @@ namespace Proiect.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wishlists", (string)null);
+                    b.ToTable("Wishlists");
                 });
 
             modelBuilder.Entity("Proiect.Models.WishlistItem", b =>
@@ -589,7 +591,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasIndex("WishlistId");
 
-                    b.ToTable("WishlistItems", (string)null);
+                    b.ToTable("WishlistItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -696,7 +698,9 @@ namespace Proiect.Data.Migrations
                 {
                     b.HasOne("Proiect.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Proiect.Models.ProductProposal", "Proposal")
                         .WithOne()
@@ -741,8 +745,8 @@ namespace Proiect.Data.Migrations
             modelBuilder.Entity("Proiect.Models.ProposalFeedback", b =>
                 {
                     b.HasOne("Proiect.Models.ProductProposal", "Proposal")
-                        .WithOne()
-                        .HasForeignKey("Proiect.Models.ProposalFeedback", "ProposalId")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("ProposalId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -835,6 +839,11 @@ namespace Proiect.Data.Migrations
             modelBuilder.Entity("Proiect.Models.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Proiect.Models.ProductProposal", b =>
+                {
+                    b.Navigation("Feedbacks");
                 });
 
             modelBuilder.Entity("Proiect.Models.ShoppingCart", b =>
