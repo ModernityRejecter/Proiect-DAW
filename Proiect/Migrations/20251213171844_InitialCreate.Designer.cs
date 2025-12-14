@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proiect.Data;
 
 #nullable disable
 
-namespace Proiect.Data.Migrations
+namespace Proiect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251213171844_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -344,7 +347,7 @@ namespace Proiect.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -355,6 +358,9 @@ namespace Proiect.Data.Migrations
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -367,7 +373,7 @@ namespace Proiect.Data.Migrations
                     b.Property<int?>("ProposalId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Rating")
+                    b.Property<double?>("Rating")
                         .HasColumnType("float");
 
                     b.Property<int>("Stock")
@@ -435,8 +441,8 @@ namespace Proiect.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -483,8 +489,7 @@ namespace Proiect.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProposalId")
-                        .IsUnique();
+                    b.HasIndex("ProposalId");
 
                     b.HasIndex("UserId");
 
@@ -696,7 +701,9 @@ namespace Proiect.Data.Migrations
                 {
                     b.HasOne("Proiect.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Proiect.Models.ProductProposal", "Proposal")
                         .WithOne()
@@ -741,8 +748,8 @@ namespace Proiect.Data.Migrations
             modelBuilder.Entity("Proiect.Models.ProposalFeedback", b =>
                 {
                     b.HasOne("Proiect.Models.ProductProposal", "Proposal")
-                        .WithOne()
-                        .HasForeignKey("Proiect.Models.ProposalFeedback", "ProposalId")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("ProposalId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -835,6 +842,11 @@ namespace Proiect.Data.Migrations
             modelBuilder.Entity("Proiect.Models.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Proiect.Models.ProductProposal", b =>
+                {
+                    b.Navigation("Feedbacks");
                 });
 
             modelBuilder.Entity("Proiect.Models.ShoppingCart", b =>
