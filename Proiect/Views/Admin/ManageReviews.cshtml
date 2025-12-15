@@ -1,0 +1,41 @@
+﻿@model IEnumerable<Proiect.Models.Review>
+@{
+    ViewData["Title"] = "Moderare Recenzii";
+}
+
+<div class="container mt-4">
+    <h2>Moderare Recenzii</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Produs</th>
+                <th>Utilizator</th>
+                <th>Rating</th>
+                <th>Comentariu</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var review in Model)
+            {
+                <tr>
+                    <td>@review.Date.ToString("dd/MM/yyyy")</td>
+                    <td>@review.Product?.Name</td>
+                    <td>@review.User?.Email</td>
+                    <td>@review.Rating <i class="bi bi-star-fill text-warning"></i></td>
+                    <td>
+                        <strong>@review.Title</strong><br />
+                        @review.Description
+                    </td>
+                    <td>
+                        <form asp-action="DeleteReview" asp-route-id="@review.Id" method="post" onsubmit="return confirm('Ștergi recenzia?');">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Înapoi</a>
+</div>

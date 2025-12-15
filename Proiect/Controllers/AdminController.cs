@@ -1,0 +1,130 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Proiect.Data;
+using Proiect.Models;
+
+namespace Proiect.Controllers
+{
+    [Authorize(Roles = "Admin")]
+    public class AdminController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public AdminController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var viewModel = new AdminDashboardViewModel
+            {
+                TotalUsers = await _userManager.Users.CountAsync(),
+                TotalProducts = await _context.Products.CountAsync(),
+                TotalOrders = await _context.Orders.CountAsync(),
+                PendingProposals = await _context.ProductProposals.CountAsync(p => p.Status == "Pending"),
+                RecentOrders = await _context.Orders
+                                    .Include(o => o.User)
+                                    .OrderByDescending(o => o.Date)
+                                    .Take(5)
+                                    .ToListAsync()
+            };
+
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> ManageUsers()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            return View(users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                await _userManager.DeleteAsync(user);
+                TempData["message"] = "Utilizatorul a fost șters.";
+            }
+            return RedirectToAction("ManageUsers");
+        }
+
+        public async Task<IActionResult> ManageReviews()
+        {
+            var reviews = await _context.Reviews
+                                        .Include(r => r.User)
+                                        .Include(r => r.Product)
+                                        .OrderByDescending(r => r.Date)
+                                        .ToListAsync();
+            return View(reviews);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteReview(int id)
+        {
+            var review = await _context.Reviews.FindAsync(id);
+            if (review != null)
+            {
+                _context.Reviews.Remove(review);
+                await _context.SaveChangesAsync();
+                TempData["message"] = "Recenzia a fost ștearsă.";
+            }
+            return RedirectToAction("ManageReviews");
+        }
+
+        public async Task<IActionResult> ManageProposals()
+        {
+            var proposals = await _context.ProductProposals
+                                          .Include(p => p.User)
+                                          .Include(p => p.Category)
+                                          .Where(p => p.Status == "Pending")
+                                          .ToListAsync();
+            return View(proposals);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveProposal(int id)
+        {
+            var proposal = await _context.ProductProposals.FindAsync(id);
+            if (proposal == null) return NotFound();
+
+            var newProduct = new Product
+            {
+                Name = proposal.Name,
+                Description = proposal.Description,
+                Price = (decimal)proposal.Price,
+                Stock = proposal.Stock,
+                ImagePath = proposal.ImagePath,
+                CategoryId = proposal.CategoryId,
+                ProposalId = proposal.Id,
+                Rating = 0
+            };
+
+            _context.Products.Add(newProduct);
+            proposal.Status = "Approved";
+
+            await _context.SaveChangesAsync();
+            TempData["message"] = "Produsul a fost aprobat și publicat.";
+            return RedirectToAction("ManageProposals");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectProposal(int id)
+        {
+            var proposal = await _context.ProductProposals.FindAsync(id);
+            if (proposal != null)
+            {
+                proposal.Status = "Rejected";
+                await _context.SaveChangesAsync();
+                TempData["message"] = "Propunerea a fost respinsă.";
+            }
+            return RedirectToAction("ManageProposals");
+        }
+    }
+}

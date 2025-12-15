@@ -1,0 +1,52 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Confirmare înregistrare";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <div class="bg-brand-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-envelope-check text-brand fs-1"></i>
+                        </div>
+                        <h2 class="fw-bold text-brand">@ViewData["Title"]</h2>
+                    </div>
+
+                    @{
+                        if (@Model.DisplayConfirmAccountLink)
+                        {
+                            <div class="alert alert-info text-start small" role="alert">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <strong>Notă pentru dezvoltatori:</strong> Aplicația nu are un serviciu de email configurat. În mod normal, acest link ar fi trimis pe email.
+                            </div>
+
+                            <p class="text-muted mb-4">
+                                Pentru a finaliza procesul, apasă pe butonul de mai jos:
+                            </p>
+
+                            <a id="confirm-link" href="@Model.EmailConfirmationUrl" class="btn btn-primary w-100 py-2 fw-bold">
+                                Confirmă contul acum
+                            </a>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-4">
+                                Te rugăm să verifici adresa de email pentru a confirma contul. Ți-am trimis un link de activare.
+                            </p>
+
+                            <div class="border-top pt-4">
+                                <a asp-page="./Login" class="btn btn-outline-primary px-4">
+                                    Mergi la autentificare
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Proiect.Models.ProductProposal>
+@{
+    ViewData["Title"] = "Aprobare Produse";
+}
+
+<div class="container mt-4">
+    <h2>Propuneri de Produse (Pending)</h2>
+    @if (TempData["message"] != null)
+    {
+        <div class="alert alert-success">@TempData["message"]</div>
+    }
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@item.ImagePath" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: contain;">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <p class="card-text text-truncate">@item.Description</p>
+                        <p class="mb-1"><strong>Preț:</strong> @item.Price RON</p>
+                        <p class="mb-1"><strong>Stoc:</strong> @item.Stock</p>
+                        <p class="mb-1"><strong>Categorie:</strong> @item.Category?.Name</p>
+                        <small class="text-muted">Propus de: @item.User?.Email</small>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
+                        <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i> Aprobă</button>
+                        </form>
+                        <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i> Respinge</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    @if (!Model.Any())
+    {
+        <p class="mt-4 text-center text-muted">Nu există propuneri în așteptare.</p>
+    }
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">Înapoi</a>
+    </div>
+</div>
