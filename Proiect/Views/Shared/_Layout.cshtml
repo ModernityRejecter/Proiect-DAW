@@ -101,8 +101,8 @@
                                 <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">Admin</a>
                             </li>
                         }
-
-                        @if (User.IsInRole("Colaborator"))
+                        <!-- mica schimbare poate temporara poate nu -->
+                        @if (User.IsInRole("Colaborator") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-primary fw-bold" asp-controller="Products" asp-action="MyProposals">Propuneri</a>

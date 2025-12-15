@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Proiect.Models
 {
@@ -31,13 +33,15 @@ namespace Proiect.Models
         //-------------------------------------------------------------
         
         public int CategoryId { get; set; }
-        public virtual Category Category { get; set; }
+        public virtual Category? Category { get; set; }
 
         //-------------------------------------------------------------
 
-        public string UserId { get; set; }
-        public virtual ApplicationUser User { get; set; }
+        public string? UserId { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
         //-------------------------------------------------------------
+        [NotMapped]
+        public IEnumerable<SelectListItem> Categ { get; set; } = Enumerable.Empty<SelectListItem>();
     }
 }

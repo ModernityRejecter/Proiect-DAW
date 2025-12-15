@@ -1,0 +1,99 @@
+﻿@model Proiect.Models.ProductProposal
+
+@{
+    ViewData["Title"] = "Editare propunere";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+
+            <div class="card shadow border-0 hover-effect">
+                <div class="card-body p-4">
+
+                    <h4 class="fw-bold text-brand mb-4">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Editare Propunere Produs
+                    </h4>
+
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="Status" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <div class="mb-4 text-center p-3 bg-light rounded border">
+                                <label class="form-label text-muted small mb-2 d-block text-start">Imagine curentă:</label>
+                                <img src="@Model.ImagePath" alt="Imagine produs" style="max-height: 150px; object-fit: contain;"
+                                     class="img-fluid rounded"
+                                     onerror="this.style.display='none'">
+                            </div>
+                        }
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Name" class="form-control" placeholder="Nume produs" />
+                            <label asp-for="Name">Nume produs</label>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select asp-for="CategoryId" asp-items="Model.Categ" class="form-select">
+                                <option value="" disabled>Selectează o categorie</option>
+                            </select>
+                            <label asp-for="CategoryId">Categorie</label>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Price" type="number" step="0.01" class="form-control" placeholder="Preț" />
+                                    <label asp-for="Price">Preț (RON)</label>
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Stock" type="number" class="form-control" placeholder="Stoc" />
+                                    <label asp-for="Stock">Stoc</label>
+                                    <span asp-validation-for="Stock" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="ImagePath" class="form-control" placeholder="URL Imagine" />
+                            <label asp-for="ImagePath">Link nouă imagine (opțional)</label>
+                            <span asp-validation-for="ImagePath" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <textarea asp-for="Description" class="form-control" placeholder="Descriere" style="height: 120px"></textarea>
+                            <label asp-for="Description">Descriere produs</label>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                Anulează
+                            </a>
+
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> Actualizează
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
