@@ -1,0 +1,57 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profilul meu";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h3 class="fw-bold text-brand mb-4">@ViewData["Title"]</h3>
+        <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form id="profile-form" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Username" class="form-control" placeholder="Email" disabled />
+                        <label asp-for="Username" class="form-label">Email (Username)</label>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Input.FirstName" class="form-control" placeholder="Prenume" />
+                                <label asp-for="Input.FirstName">Prenume</label>
+                                <span asp-validation-for="Input.FirstName" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Input.LastName" class="form-control" placeholder="Nume" />
+                                <label asp-for="Input.LastName">Nume</label>
+                                <span asp-validation-for="Input.LastName" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Telefon" />
+                        <label asp-for="Input.PhoneNumber">Număr de telefon</label>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                    </div>
+
+                    <button id="update-profile-button" type="submit" class="btn btn-primary px-4 fw-bold">
+                        <i class="bi bi-save me-2"></i> Salvează modificările
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

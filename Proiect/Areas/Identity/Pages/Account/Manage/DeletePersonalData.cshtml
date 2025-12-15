@@ -1,0 +1,45 @@
+﻿@page
+@model DeletePersonalDataModel
+@{
+    ViewData["Title"] = "Ștergere date personale";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h3 class="fw-bold text-brand mb-4">@ViewData["Title"]</h3>
+
+        <div class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-3 fs-3"></i>
+            <div>
+                <strong>Atenție!</strong> Ștergerea datelor va duce la eliminarea permanentă a contului tău. <br />
+                Această acțiune este <strong>ireversibilă</strong> și datele nu vor putea fi recuperate.
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body p-4">
+                <form id="delete-user" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    @if (Model.RequirePassword)
+                    {
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Parolă" />
+                            <label asp-for="Input.Password" class="form-label">Introdu parola pentru confirmare</label>
+                            <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                        </div>
+                    }
+
+                    <button class="btn btn-danger w-100 py-2 fw-bold" type="submit">
+                        <i class="bi bi-trash3-fill me-2"></i> Șterge datele și închide contul
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
