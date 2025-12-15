@@ -12,8 +12,8 @@ using Proiect.Data;
 namespace Proiect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251213171844_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251215102930_NewReplacement")]
+    partial class NewReplacement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -347,7 +347,7 @@ namespace Proiect.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -452,7 +452,6 @@ namespace Proiect.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -701,9 +700,7 @@ namespace Proiect.Migrations
                 {
                     b.HasOne("Proiect.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("Proiect.Models.ProductProposal", "Proposal")
                         .WithOne()
@@ -736,9 +733,7 @@ namespace Proiect.Migrations
 
                     b.HasOne("Proiect.Models.ApplicationUser", "User")
                         .WithMany("Proposals")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Category");
 

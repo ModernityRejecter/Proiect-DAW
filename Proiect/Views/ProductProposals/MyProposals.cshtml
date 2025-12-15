@@ -1,0 +1,156 @@
+﻿@{
+    ViewData["Title"] = "Propunerile Mele";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold text-brand">
+            <i class="bi bi-person-workspace me-2"></i>Propunerile Mele
+        </h2>
+        <a asp-action="New" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> Adaugă Propunere
+        </a>
+    </div>
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert @(ViewBag.MessageType ?? "alert-success") alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @ViewBag.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (ViewBag.Proposals == null || ((IEnumerable<Proiect.Models.ProductProposal>)ViewBag.Proposals).Count() == 0)
+    {
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-folder2-open fs-1 text-muted"></i>
+            </div>
+            <h4 class="text-muted">Nu ai adăugat nicio propunere încă.</h4>
+            <p class="text-muted mb-4">Începe prin a propune primul tău produs spre vânzare.</p>
+            <a asp-action="New" class="btn btn-outline-primary px-4">Adaugă acum</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @foreach (var proposal in ViewBag.Proposals)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow border-0 hover-effect position-relative">
+
+                        <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
+                            @if (proposal.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark shadow-sm">
+                                    <i class="bi bi-hourglass-split me-1"></i>În așteptare
+                                </span>
+                            }
+                            else if (proposal.Status == "Approved")
+                            {
+                                <span class="badge bg-success shadow-sm">
+                                    <i class="bi bi-check-circle me-1"></i>Aprobat
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger shadow-sm">
+                                    <i class="bi bi-x-circle me-1"></i>Respins
+                                </span>
+                            }
+                        </div>
+
+                        <div class="bg-light rounded-top d-flex align-items-center justify-content-center overflow-hidden" style="height: 200px;">
+                            @if (!string.IsNullOrEmpty(proposal.ImagePath))
+                            {
+                                <img src="@proposal.ImagePath" class="w-100 h-100 object-fit-cover" alt="@proposal.Name"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image';">
+                            }
+                            else
+                            {
+                                <div class="text-muted text-center">
+                                    <i class="bi bi-image fs-1"></i>
+                                    <p class="mb-0 small">Fără imagine</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-secondary border">
+                                    <i class="bi bi-tag me-1"></i> @proposal.Category?.Name
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold text-dark mb-2 text-truncate" title="@proposal.Name">
+                                @proposal.Name
+                            </h5>
+
+                            <p class="card-text text-muted small flex-grow-1 text-truncate-3">
+                                @proposal.Description
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small">Preț</span>
+                                    <span class="fw-bold text-brand">@proposal.Price RON</span>
+                                </div>
+                                <div class="d-flex flex-column text-end">
+                                    <span class="text-muted small">Stoc</span>
+                                    <span class="fw-bold text-dark">@proposal.Stock buc.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 p-3">
+                            <div class="d-grid gap-2">
+                                <a asp-action="Show" asp-route-id="@proposal.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i> Detalii
+                                </a>
+
+                                @if (proposal.Status == "Pending")
+                                {
+                                    <div class="d-flex gap-2">
+                                        <a asp-action="Edit" asp-route-id="@proposal.Id" class="btn btn-outline-secondary btn-sm w-50" title="Editează">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+
+                                        <form method="post" asp-action="Delete" asp-route-id="@proposal.Id" class="w-50">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Ești sigur că vrei să ștergi această propunere?');">
+                                                <i class="bi bi-trash"></i> Șterge
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-light btn-sm text-muted border" disabled title="Nu poți modifica o propunere deja procesată">
+                                        <i class="bi bi-lock-fill"></i> Modificare blocată
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+</style>

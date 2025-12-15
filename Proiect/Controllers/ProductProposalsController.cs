@@ -31,6 +31,24 @@ namespace Proiect.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Colaborator,Admin")]
+        public async Task<IActionResult> MyProposals()
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            var proposals = await GetOwnProposals();
+
+            ViewBag.Proposals = proposals;
+
+            if (TempData.ContainsKey("message"))
+            {
+                ViewBag.Message = TempData["message"];
+                ViewBag.MessageType = TempData["messageType"];
+            }
+
+            return View();
+        }
+
         [Authorize(Roles = "Admin,Colaborator")]
         public IActionResult New()
         {
