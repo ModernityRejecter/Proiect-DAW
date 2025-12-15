@@ -32,6 +32,10 @@ namespace Proiect.Data
                 .Property(p => p.Price)
                 .HasColumnType("decimal(18, 2)");
 
+            builder.Entity<ProductProposal>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18, 2)");
+
             // rezolvare problema la delete
             builder.Entity<Product>()
                 .HasOne(p => p.Proposal)
@@ -41,8 +45,8 @@ namespace Proiect.Data
 
             builder.Entity<ProposalFeedback>()
                 .HasOne(p => p.Proposal)
-                .WithOne()
-                .HasForeignKey<ProposalFeedback>(p => p.ProposalId)
+                .WithMany(collection => collection.Feedbacks)
+                .HasForeignKey(p => p.ProposalId)
                 .OnDelete(DeleteBehavior.NoAction);
         }
 

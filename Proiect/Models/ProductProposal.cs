@@ -19,7 +19,7 @@ namespace Proiect.Models
 
         [Required(ErrorMessage = "Product price field is required")]
         [Range(0, double.MaxValue, ErrorMessage = "Product price must be a positive number")]
-        public double Price { get; set; }
+        public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Product stock field is required")]
         [Range(0, double.MaxValue, ErrorMessage = "Product stock must be a positive number")]
@@ -43,5 +43,9 @@ namespace Proiect.Models
         //-------------------------------------------------------------
         [NotMapped]
         public IEnumerable<SelectListItem> Categ { get; set; } = Enumerable.Empty<SelectListItem>();
+
+        public virtual ICollection<ProposalFeedback> Feedbacks { get; set; } = new List<ProposalFeedback>();
+
+        //-------------------------------------------------------------
     }
 }

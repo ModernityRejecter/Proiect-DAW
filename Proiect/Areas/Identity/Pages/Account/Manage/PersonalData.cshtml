@@ -1,0 +1,56 @@
+﻿@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Date personale";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h3 class="fw-bold text-brand mb-4">@ViewData["Title"]</h3>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Contul tău conține date personale pe care ni le-ai furnizat. De aici poți descărca o copie a acestora sau poți solicita ștergerea definitivă a contului.
+                </p>
+
+                <div class="d-flex flex-column gap-3">
+                    <div class="card border bg-light">
+                        <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <h6 class="fw-bold mb-1">
+                                    <i class="bi bi-download text-primary me-2"></i>Descarcă datele
+                                </h6>
+                                <div class="text-muted small">Salvează o copie locală a informațiilor tale (JSON).</div>
+                            </div>
+                            <form id="download-data" asp-page="DownloadPersonalData" method="post">
+                                <button class="btn btn-primary btn-sm fw-bold px-3" type="submit">
+                                    Descarcă
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card border border-danger" style="background-color: rgba(220, 53, 69, 0.03);">
+                        <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <h6 class="fw-bold text-danger mb-1">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Șterge contul
+                                </h6>
+                                <div class="text-danger small">Această acțiune este permanentă și ireversibilă.</div>
+                            </div>
+                            <a id="delete" asp-page="DeletePersonalData" class="btn btn-danger btn-sm fw-bold px-3">
+                                Șterge
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

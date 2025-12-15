@@ -1,0 +1,51 @@
+﻿@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Deconectare";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 text-center">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    @{
+                        if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <div class="mb-4">
+                                <div class="bg-brand-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-box-arrow-right text-brand fs-1"></i>
+                                </div>
+                                <h2 class="fw-bold text-brand">Deconectare</h2>
+                                <p class="text-muted">Ești sigur că vrei să ieși din cont?</p>
+                            </div>
+
+                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                                <button type="submit" class="btn btn-primary px-4 fw-bold w-100">
+                                    Da, deconectează-mă
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="mb-4">
+                                <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                                <h2 class="fw-bold text-brand mt-3">Te-ai deconectat cu succes!</h2>
+                                <p class="text-muted">Sperăm să te revedem curând.</p>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <a asp-page="./Login" class="btn btn-primary fw-bold">
+                                    Autentificare
+                                </a>
+                                <a asp-page="/Index" asp-area="" class="btn btn-outline-secondary">
+                                    Mergi la Prima Pagină
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -12,11 +12,13 @@ namespace Proiect.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AdminController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public AdminController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<IActionResult> Index()
@@ -40,7 +42,40 @@ namespace Proiect.Controllers
         public async Task<IActionResult> ManageUsers()
         {
             var users = await _userManager.Users.ToListAsync();
+
+            var userRoles = new Dictionary<string, string>();
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                userRoles[user.Id] = roles.FirstOrDefault() ?? "User";
+            }
+
+            ViewBag.UserRoles = userRoles;
+            ViewBag.AllRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+
             return View(users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserRole(string id, string newRole)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                if (currentRoles.Any())
+                {
+                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                }
+
+                if (!string.IsNullOrEmpty(newRole))
+                {
+                    await _userManager.AddToRoleAsync(user, newRole);
+                }
+
+                TempData["message"] = $"Rolul utilizatorului {user.Email} a fost schimbat în {newRole}.";
+            }
+            return RedirectToAction("ManageUsers");
         }
 
         [HttpPost]
