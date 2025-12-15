@@ -129,13 +129,13 @@ namespace Proiect.Controllers
                         db.SaveChanges();
                         TempData["message"] = "Propunerea a fost actualizată";
                         TempData["messageType"] = "alert-success";
-                        return RedirectToAction("Index");
+                        return RedirectToAction("MyProposals");
                     }
                     else
                     {
                         TempData["message"] = "Nu dețineți drepturile necesare ca să modificați propunerea altui utilizator";
                         TempData["messageType"] = "alert-danger";
-                        return RedirectToAction("Index");
+                        return RedirectToAction("MyProposals");
                     }
                 }
                 else 
