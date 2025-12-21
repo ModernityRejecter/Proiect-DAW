@@ -102,7 +102,7 @@ namespace Proiect.Controllers
 
                     TempData["message"] = "Produsul a fost propus cu succes!";
                     TempData["messageType"] = "alert-success";
-                    return RedirectToAction("Index");
+                    return RedirectToAction("MyProposals");
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +144,6 @@ namespace Proiect.Controllers
         public async Task<IActionResult> Edit(ProductProposal requestedProposal, int id)
         {
             ProductProposal? proposal = await db.ProductProposals.FindAsync(id);
-
             if(proposal is null)
             {
                 return NotFound();
@@ -157,7 +156,8 @@ namespace Proiect.Controllers
                 }
                 if (ModelState.IsValid)
                 {
-                    if(requestedProposal.UserId == _userManager.GetUserId(User))
+                    var currentUserId = _userManager.GetUserId(User);
+                    if (proposal.UserId == currentUserId)
                     {
                         proposal.Stock = requestedProposal.Stock;
                         proposal.Price = requestedProposal.Price;
@@ -210,6 +210,7 @@ namespace Proiect.Controllers
                 else 
                 {
                     requestedProposal.Categ = GetAllCategories();
+                    requestedProposal.ImagePath = proposal.ImagePath;
                     return View(requestedProposal);
                 }
             }
