@@ -24,9 +24,14 @@ namespace Proiect.Models
         [Required(ErrorMessage = "Product stock field is required")]
         [Range(0, double.MaxValue, ErrorMessage = "Product stock must be a positive number")]
         public int Stock { get; set; }
+        public string? ImagePath { get; set; }
 
-        [Required(ErrorMessage = "Product image path is required")]
-        public string ImagePath { get; set; }
+        [NotMapped]
+        [Display(Name = "Imagine produs")]
+        [Required(ErrorMessage = "Este necesară încarcarea unei imagini")]
+        [MaxFileSize(10 * 1024 * 1024)] // 10 MB
+        [AllowedExtensions(new string[] { ".jpg", ".jpeg", ".png", ".webp" })]
+        public IFormFile ImageFile { get; set; }
 
         public string Status { get; set; } = "Pending";
 
