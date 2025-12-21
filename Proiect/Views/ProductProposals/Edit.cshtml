@@ -16,7 +16,7 @@
                         Editare Propunere Produs
                     </h4>
 
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="UserId" />
                         <input type="hidden" asp-for="Status" />
@@ -63,11 +63,12 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="ImagePath" class="form-control" placeholder="URL Imagine" />
-                            <label asp-for="ImagePath">Link nouă imagine (opțional)</label>
-                            <span asp-validation-for="ImagePath" class="text-danger"></span>
+                        <div class="mb-3">
+                            <!-- poate va fi stearsa prima linie in viitor, acest label-->
+                            <label asp-for="ImageFile" class="form-label">Încarcă Imagine</label>
+                            <input asp-for="ImageFile" type="file" class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp" />
+                            <span asp-validation-for="ImageFile" class="text-danger"></span>
                         </div>
 
                         <div class="form-floating mb-4">
