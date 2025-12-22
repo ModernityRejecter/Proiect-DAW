@@ -405,3 +405,4 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio
 /Proiect/script.py
 /Proiect/output_complet.txt
+wwwroot/images/products/
