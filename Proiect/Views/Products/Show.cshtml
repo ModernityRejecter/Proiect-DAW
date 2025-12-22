@@ -1,0 +1,170 @@
+﻿@model Proiect.Models.Product
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container mt-5 mb-5">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Acasă</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Products" asp-action="Index" class="text-decoration-none">Produse</a></li>
+            @if (Model.Category != null)
+            {
+                <li class="breadcrumb-item"><a asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="text-decoration-none">@Model.Category.Name</a></li>
+            }
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center overflow-hidden border position-relative" style="height: 450px;">
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <img src="@Model.ImagePath" class="img-fluid p-3" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="@Model.Name">
+                        }
+                        else
+                        {
+                            <div class="text-muted text-center">
+                                <i class="bi bi-card-image display-1"></i>
+                                <p class="mt-2">Fără imagine disponibilă</p>
+                            </div>
+                        }
+
+                        <div class="position-absolute top-0 start-0 m-3">
+                            @if (Model.Stock > 0)
+                            {
+                                <span class="badge bg-success shadow-sm px-3 py-2">În Stoc</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger shadow-sm px-3 py-2">Stoc Epuizat</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="ps-lg-4">
+                        <div class="mb-2">
+                            <span class="text-muted text-uppercase small fw-bold tracking-wide">
+                                @(Model.Category?.Name ?? "General")
+                            </span>
+                        </div>
+
+                        <h1 class="fw-bold text-dark mb-2">@Model.Name</h1>
+
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="text-warning me-2">
+                                @{
+                                    double ratingVal = Model.Rating ?? 0;
+                                    int fullStars = (int)ratingVal;
+                                    bool hasHalf = (ratingVal - fullStars) >= 0.5;
+                                }
+                                @for (int i = 0; i < fullStars; i++)
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                                @if (hasHalf)
+                                {
+                                    <i class="bi bi-star-half"></i>
+                                }
+                                @for (int i = (hasHalf ? fullStars + 1 : fullStars); i < 5; i++)
+                                {
+                                    <i class="bi bi-star"></i>
+                                }
+                            </div>
+                            <span class="text-muted small">(@(Model.Rating?.ToString("0.0") ?? "0.0"))</span>
+                        </div>
+
+                        <h2 class="text-primary fw-bold mb-4">@Model.Price RON</h2>
+
+                        <div class="mb-4">
+                            <h5 class="h6 text-dark fw-bold">Descriere produs</h5>
+                            <p class="text-secondary" style="line-height: 1.6;">
+                                @Model.Description
+                            </p>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="bg-light p-4 rounded border">
+                            @if (Model.Stock > 0)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                    <input type="hidden" name="productId" value="@Model.Id" />
+
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-sm-4">
+                                            <label for="quantity" class="form-label fw-bold small">Cantitate</label>
+                                            <div class="input-group">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="decrementValue()">-</button>
+                                                <input type="number" id="quantity" name="quantity" class="form-control text-center border-secondary" value="1" min="1" max="@Model.Stock">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="incrementValue()">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
+                                                <i class="bi bi-cart-plus me-2"></i> Adaugă în Coș
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 text-muted small">
+                                        <i class="bi bi-box-seam me-1"></i> Disponibile: @Model.Stock bucăți
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger mb-0 d-flex align-items-center">
+                                    <i class="bi bi-exclamation-circle-fill me-2 fs-4"></i>
+                                    <div>
+                                        <strong>Indisponibil momentan.</strong>
+                                        <br>Acest produs nu mai este pe stoc.
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="mt-3 text-center text-sm-start">
+                                <form asp-controller="Wishlist" asp-action="Add" method="post" class="d-inline">
+                                    <input type="hidden" name="productId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-link text-decoration-none text-danger p-0">
+                                        <i class="bi bi-heart me-1"></i> Adaugă la Favorite (Wishlist)
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function incrementValue() {
+        var value = parseInt(document.getElementById('quantity').value, 10);
+        value = isNaN(value) ? 1 : value;
+        var max = parseInt(document.getElementById('quantity').getAttribute('max'), 10);
+        if(value < max){
+            value++;
+            document.getElementById('quantity').value = value;
+        }
+    }
+
+    function decrementValue() {
+        var value = parseInt(document.getElementById('quantity').value, 10);
+        value = isNaN(value) ? 1 : value;
+        if(value > 1){
+            value--;
+            document.getElementById('quantity').value = value;
+        }
+    }
+</script>

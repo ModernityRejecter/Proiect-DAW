@@ -32,8 +32,14 @@ namespace Proiect.Models
 
         // posibil sa o fac colectie pentru a stoca mai multe cai pentru imagini
         // nu ma convinge prea tare inserarea cailor pentru folosirea imaginilor dar momentan asta este
-        [Required(ErrorMessage = "Product image path is required")]
-        public string ImagePath { get; set; }
+        public string? ImagePath { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Imagine Produs")]
+        [Required(ErrorMessage = "Este necesară încarcarea unei imagini")]
+        [MaxFileSize(10 * 1024 * 1024)] // 10 MB
+        [AllowedExtensions(new string[] { ".jpg", ".jpeg", ".png", ".webp" })]
+        public IFormFile? ImageFile { get; set; }
 
         // cand stergem un produs, il dezactivam, un fel de soft delete
         public bool IsActive { get; set; } = true;

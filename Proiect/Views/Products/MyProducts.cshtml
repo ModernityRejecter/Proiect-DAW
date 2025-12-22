@@ -1,0 +1,113 @@
+﻿@model IEnumerable<Proiect.Models.Product>
+@{
+    ViewData["Title"] = "Produsele Mele";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold text-brand">
+            <i class="bi bi-box-seam-fill me-2"></i>Produsele Mele
+        </h2>
+    </div>
+
+    @if (TempData["message"] != null)
+    {
+        <div class="alert @(TempData["messageType"] ?? "alert-success") alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-box2 fs-1 text-muted"></i>
+            </div>
+            <h4 class="text-muted">Nu ai produse active la vânzare.</h4>
+            <p class="text-muted mb-4">Produsele aprobate din propunerile tale vor apărea aici.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @foreach (var product in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow border-0 hover-effect">
+
+                        <div class="bg-light rounded-top d-flex align-items-center justify-content-center overflow-hidden" style="height: 200px;">
+                            @if (!string.IsNullOrEmpty(product.ImagePath))
+                            {
+                                <img src="@product.ImagePath" class="w-100 h-100 object-fit-cover" alt="@product.Name">
+                            }
+                            else
+                            {
+                                <div class="text-muted text-center">
+                                    <i class="bi bi-image fs-1"></i>
+                                    <p class="mb-0 small">Fără imagine</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-secondary border">
+                                    <i class="bi bi-tag me-1"></i> @(product.Category?.Name ?? "General")
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold text-dark mb-2 text-truncate" title="@product.Name">
+                                @product.Name
+                            </h5>
+
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small">Preț</span>
+                                    <span class="fw-bold text-brand">@product.Price RON</span>
+                                </div>
+                                <div class="d-flex flex-column text-end">
+                                    <span class="text-muted small">Stoc</span>
+                                    <span class="fw-bold @(product.Stock > 0 ? "text-dark" : "text-danger")">@product.Stock buc.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 p-3">
+                            <div class="d-flex gap-2">
+                                <a asp-action="Show" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm flex-grow-1" title="Vezi detalii">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-outline-secondary btn-sm flex-grow-1" title="Editează">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form asp-action="SoftDelete" asp-route-id="@product.Id" method="post" class="flex-grow-1">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Sigur vrei să ștergi acest produs? El va fi dezactivat din magazin.');" title="Șterge">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Collaborator" asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi la Dashboard
+        </a>
+    </div>
+</div>
+
+<style>
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+</style>
