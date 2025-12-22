@@ -94,6 +94,7 @@
 
                     <div class="d-flex gap-2 flex-wrap">
 
+                        <!-- cam redundant poate-->
                         @if (User.IsInRole("Admin") && Model.Status == "Pending")
                         {
                             <form asp-controller="Admin" asp-action="ApproveProposal" asp-route-id="@Model.Id" method="post" class="flex-grow-1">

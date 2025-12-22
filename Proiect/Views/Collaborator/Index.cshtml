@@ -1,0 +1,175 @@
+﻿@model Proiect.Models.CollaboratorDashboardViewModel
+@{
+    ViewData["Title"] = "Panou Colaborator";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-brand mb-1">Panou Colaborator</h2>
+            <p class="text-muted mb-0">Gestionează propunerile și produsele tale</p>
+        </div>
+        <div class="bg-white px-4 py-2 rounded-pill shadow-sm border">
+            <i class="bi bi-calendar3 text-brand me-2"></i>
+            <span class="fw-medium">@DateTime.Now.ToString("dd MMMM yyyy")</span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 hover-effect">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="rounded-circle bg-brand-soft p-3 me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-folder2-open fs-3 text-brand"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small fw-bold">Total</h6>
+                        <h2 class="mb-0 fw-bold text-dark">@Model.TotalProposals</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 hover-effect">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-check-circle-fill fs-3 text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small fw-bold">Aprobate</h6>
+                        <h2 class="mb-0 fw-bold text-dark">@Model.ApprovedProducts</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 hover-effect">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-hourglass-split fs-3 text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small fw-bold">În Așteptare</h6>
+                        <h2 class="mb-0 fw-bold text-dark">@Model.PendingProposals</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 hover-effect">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-x-circle-fill fs-3 text-danger"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small fw-bold">Respinse</h6>
+                        <h2 class="mb-0 fw-bold text-dark">@Model.RejectedProposals</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-title mb-0 fw-bold text-dark">Acțiuni Rapide</h5>
+                </div>
+                <div class="list-group list-group-flush py-2">
+                    <a asp-controller="ProductProposals" asp-action="New" class="list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-center">
+                        <i class="bi bi-plus-circle-fill text-brand me-3 fs-5"></i>
+                        <span class="fw-medium">Adaugă Propunere Nouă</span>
+                        <i class="bi bi-chevron-right ms-auto text-muted small"></i>
+                    </a>
+
+                    <a asp-controller="ProductProposals" asp-action="MyProposals" class="list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-center">
+                        <i class="bi bi-list-ul text-brand me-3 fs-5"></i>
+                        <span class="fw-medium">Gestionează Propunerile</span>
+                        @if (Model.PendingProposals > 0)
+                        {
+                            <span class="badge bg-warning text-dark rounded-pill ms-auto">@Model.PendingProposals</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-chevron-right ms-auto text-muted small"></i>
+                        }
+                    </a>
+
+                    <a asp-controller="Home" asp-action="Index" class="list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-center">
+                        <i class="bi bi-shop text-brand me-3 fs-5"></i>
+                        <span class="fw-medium">Mergi la Magazin</span>
+                        <i class="bi bi-chevron-right ms-auto text-muted small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold text-dark">Ultimele Propuneri</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0 text-muted small text-uppercase py-3 ps-4">Produs</th>
+                                <th class="border-0 text-muted small text-uppercase py-3">Preț</th>
+                                <th class="border-0 text-muted small text-uppercase py-3">Stoc</th>
+                                <th class="border-0 text-muted small text-uppercase py-3 pe-4 text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RecentProposals)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-medium text-brand">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                                            {
+                                                <img src="@item.ImagePath" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded-circle bg-light me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                    <i class="bi bi-image text-muted small"></i>
+                                                </div>
+                                            }
+                                            @item.Name
+                                        </div>
+                                    </td>
+                                    <td>@item.Price RON</td>
+                                    <td>@item.Stock</td>
+                                    <td class="pe-4 text-end">
+                                        @if (item.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark border">În așteptare</span>
+                                        }
+                                        else if (item.Status == "Approved")
+                                        {
+                                            <span class="badge bg-success border">Aprobat</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger border">Respins</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.RecentProposals.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Nu există activitate recentă.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

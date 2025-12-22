@@ -254,7 +254,10 @@ namespace Proiect.Controllers
         [Authorize(Roles = "Admin,Colaborator")]
         public IActionResult Show(int id)
         {
-            ProductProposal? proposal = db.ProductProposals.Find(id);
+            ProductProposal? proposal = db.ProductProposals
+                                            .Include(pp => pp.Category)
+                                            .Include(pp => pp.User)
+                                            .FirstOrDefault(p => p.Id == id);
 
             if(proposal is null)
             {
