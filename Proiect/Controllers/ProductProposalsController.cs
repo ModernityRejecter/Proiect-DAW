@@ -222,7 +222,6 @@ namespace Proiect.Controllers
         public IActionResult Delete(int id)
         {
             ProductProposal? proposal = db.ProductProposals.Find(id);
-
             //nu cred ca este posibil sa fie null vreodata
             if(proposal is null)
             {
@@ -231,17 +230,25 @@ namespace Proiect.Controllers
             
             if(proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
+                if(proposal.ImagePath is not null || proposal.ImagePath != "")
+                {
+                    var filePath = Path.Combine(_env.WebRootPath, proposal.ImagePath.TrimStart('/').Replace('/', '\\'));
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
                 db.ProductProposals.Remove(proposal);
                 db.SaveChanges();
                 TempData["message"] = "Propunerea a fost stearsă";
-                TempData["messageType"] = "alertSuccess";
+                TempData["messageType"] = "alert-success";
             }
             else
             {
                 TempData["message"] = "Nu dețineți drepturile necesare ca să ștergeți propunerea altui utilizator";
                 TempData["messageType"] = "alert-danger";
             }
-            return RedirectToAction("Index");
+            return RedirectToAction("MyProposals");
         }
 
         //------------------------------------------------------
