@@ -1,0 +1,128 @@
+﻿@model Proiect.Models.ProductProposal
+
+@{
+    ViewData["Title"] = "Detalii Propunere";
+}
+
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Toate Propunerile</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+            </ol>
+        </nav>
+
+        <div>
+            @if (Model.Status == "Pending")
+            {
+                <span class="badge bg-warning text-dark fs-6 px-3 py-2 border border-warning">
+                    <i class="bi bi-hourglass-split me-1"></i> În așteptare
+                </span>
+            }
+            else if (Model.Status == "Approved")
+            {
+                <span class="badge bg-success fs-6 px-3 py-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> Aprobat
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-danger fs-6 px-3 py-2">
+                    <i class="bi bi-x-circle-fill me-1"></i> Respins
+                </span>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <div class="col-md-5 bg-light d-flex align-items-center justify-content-center border-end" style="min-height: 400px;">
+                    @if (!string.IsNullOrEmpty(Model.ImagePath))
+                    {
+                        <img src="@Model.ImagePath" class="img-fluid p-4" style="max-height: 400px; object-fit: contain;" alt="@Model.Name">
+                    }
+                    else
+                    {
+                        <div class="text-muted text-center p-5">
+                            <i class="bi bi-image display-1 mb-3"></i>
+                            <p class="mb-0">Nu a fost încărcată nicio imagine</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-7 p-4 p-lg-5">
+
+                    <div class="mb-2 text-uppercase text-muted small fw-bold">
+                        @if (Model.Category != null)
+                        {
+                            @Model.Category.Name
+                        }
+                        else
+                        {
+                            <span class="text-danger">Fără Categorie</span>
+                        }
+                    </div>
+
+                    <h2 class="fw-bold mb-3">@Model.Name</h2>
+
+                    <h3 class="text-primary mb-4">@Model.Price RON</h3>
+
+                    <div class="mb-4">
+                        <label class="fw-bold text-muted small">Descriere:</label>
+                        <p class="card-text mt-1">@Model.Description</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="border rounded p-3 text-center bg-light">
+                                <small class="text-muted d-block text-uppercase">Stoc Propus</small>
+                                <span class="fw-bold fs-5">@Model.Stock buc.</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-3 text-center bg-light">
+                                <small class="text-muted d-block text-uppercase">Utilizator</small>
+                                <span class="fw-bold text-truncate d-block">@(Model.User?.UserName ?? "Necunoscut")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex gap-2 flex-wrap">
+
+                        @if (User.IsInRole("Admin") && Model.Status == "Pending")
+                        {
+                            <form asp-controller="Admin" asp-action="ApproveProposal" asp-route-id="@Model.Id" method="post" class="flex-grow-1">
+                                <button type="submit" class="btn btn-success w-100 py-2">
+                                    <i class="bi bi-check-lg me-1"></i> Aprobă Produsul
+                                </button>
+                            </form>
+
+                            <form asp-controller="Admin" asp-action="RejectProposal" asp-route-id="@Model.Id" method="post" class="flex-grow-1">
+                                <button type="submit" class="btn btn-outline-danger w-100 py-2">
+                                    <i class="bi bi-x-lg me-1"></i> Respinge
+                                </button>
+                            </form>
+                        }
+
+                        @if (Model.Status == "Pending" || User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary px-4 py-2">
+                                <i class="bi bi-pencil-square me-1"></i> Editează
+                            </a>
+                        }
+
+                        <a asp-action="Index" class="btn btn-light border px-4 py-2 ms-auto">
+                            Înapoi
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

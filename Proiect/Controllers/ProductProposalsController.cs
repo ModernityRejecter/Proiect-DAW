@@ -251,6 +251,27 @@ namespace Proiect.Controllers
             return RedirectToAction("MyProposals");
         }
 
+        [Authorize(Roles = "Admin,Colaborator")]
+        public IActionResult Show(int id)
+        {
+            ProductProposal? proposal = db.ProductProposals.Find(id);
+
+            if(proposal is null)
+            {
+                return NotFound();
+            }
+            if(proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            {
+                return View(proposal);
+            }
+            else
+            {
+                TempData["message"] = "Nu dețineți drepturile necesare ca să ștergeți propunerea altui utilizator";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("MyProposals");
+            }
+        }
+
         //------------------------------------------------------
         // metode interne
 
