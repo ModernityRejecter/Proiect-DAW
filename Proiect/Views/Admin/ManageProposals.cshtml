@@ -3,45 +3,132 @@
     ViewData["Title"] = "Aprobare Produse";
 }
 
-<div class="container mt-4">
-    <h2>Propuneri de Produse (Pending)</h2>
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-brand mb-1">Propuneri în Așteptare</h2>
+            <p class="text-muted mb-0">Gestionează produsele propuse de colaboratori</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi la Dashboard
+        </a>
+    </div>
+
     @if (TempData["message"] != null)
     {
-        <div class="alert alert-success">@TempData["message"]</div>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     }
 
-    <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
-        @foreach (var item in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <img src="@item.ImagePath" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: contain;">
-                    <div class="card-body">
-                        <h5 class="card-title">@item.Name</h5>
-                        <p class="card-text text-truncate">@item.Description</p>
-                        <p class="mb-1"><strong>Preț:</strong> @item.Price RON</p>
-                        <p class="mb-1"><strong>Stoc:</strong> @item.Stock</p>
-                        <p class="mb-1"><strong>Categorie:</strong> @item.Category?.Name</p>
-                        <small class="text-muted">Propus de: @item.User?.Email</small>
-                    </div>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
-                        <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post">
-                            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i> Aprobă</button>
-                        </form>
-                        <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post">
-                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i> Respinge</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
     @if (!Model.Any())
     {
-        <p class="mt-4 text-center text-muted">Nu există propuneri în așteptare.</p>
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-check-all fs-1 text-success"></i>
+            </div>
+            <h4 class="text-muted">Totul este la zi!</h4>
+            <p class="text-muted mb-0">Nu există propuneri noi care necesită aprobare.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow border-0 hover-effect position-relative">
+
+                        <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
+                            <span class="badge bg-warning text-dark shadow-sm">
+                                <i class="bi bi-hourglass-split me-1"></i>În așteptare
+                            </span>
+                        </div>
+
+                        <div class="bg-light rounded-top d-flex align-items-center justify-content-center overflow-hidden" style="height: 200px;">
+                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath" class="w-100 h-100 object-fit-cover" alt="@item.Name"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/400x300?text=No+Image';">
+                            }
+                            else
+                            {
+                                <div class="text-muted text-center">
+                                    <i class="bi bi-image fs-1"></i>
+                                    <p class="mb-0 small">Fără imagine</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-secondary border">
+                                    <i class="bi bi-tag me-1"></i> @(item.Category?.Name ?? "General")
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold text-dark mb-2 text-truncate" title="@item.Name">
+                                @item.Name
+                            </h5>
+
+                            <p class="card-text text-muted small flex-grow-1 text-truncate-3">
+                                @item.Description
+                            </p>
+
+                            <div class="mt-2 mb-3">
+                                <small class="text-muted fst-italic">
+                                    <i class="bi bi-person me-1"></i> @(item.User?.UserName ?? "Necunoscut")
+                                </small>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small">Preț</span>
+                                    <span class="fw-bold text-brand">@item.Price RON</span>
+                                </div>
+                                <div class="d-flex flex-column text-end">
+                                    <span class="text-muted small">Stoc</span>
+                                    <span class="fw-bold text-dark">@item.Stock buc.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 p-3">
+                            <div class="d-flex gap-2 w-100">
+                                <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                    <button type="submit" class="btn btn-success btn-sm w-100" title="Aprobă și Publică">
+                                        <i class="bi bi-check-lg"></i> Aprobă
+                                    </button>
+                                </form>
+                                <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" title="Respinge Propunerea">
+                                        <i class="bi bi-x-lg"></i> Respinge
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
-    <div class="mt-4">
-        <a asp-action="Index" class="btn btn-secondary">Înapoi</a>
-    </div>
-</div>
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+</style>

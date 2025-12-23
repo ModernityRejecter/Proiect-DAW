@@ -1,0 +1,164 @@
+﻿@model IEnumerable<Proiect.Models.ProductProposal>
+@{
+    ViewData["Title"] = "Istoric Propuneri";
+    var currentFilter = ViewBag.CurrentFilter as string;
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-brand mb-1">Toate Propunerile</h2>
+            <p class="text-muted mb-0">Gestionează și filtrează istoricul propunerilor</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi la Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-2">
+            <div class="nav nav-pills nav-fill gap-2 p-1 small bg-light rounded-3" role="tablist">
+                <a asp-action="AllProposals" asp-route-status="All"
+                   class="nav-link rounded-3 fw-bold @(string.IsNullOrEmpty(currentFilter) || currentFilter == "All" ? "active shadow-sm" : "")">
+                    Toate
+                </a>
+                <a asp-action="AllProposals" asp-route-status="Pending"
+                   class="nav-link rounded-3 fw-bold @(currentFilter == "Pending" ? "active bg-warning text-dark shadow-sm" : "text-dark")">
+                    <i class="bi bi-hourglass-split me-1"></i> În așteptare
+                </a>
+                <a asp-action="AllProposals" asp-route-status="Approved"
+                   class="nav-link rounded-3 fw-bold @(currentFilter == "Approved" ? "active bg-success shadow-sm" : "text-dark")">
+                    <i class="bi bi-check-circle me-1"></i> Aprobate
+                </a>
+                <a asp-action="AllProposals" asp-route-status="Rejected"
+                   class="nav-link rounded-3 fw-bold @(currentFilter == "Rejected" ? "active bg-danger shadow-sm" : "text-dark")">
+                    <i class="bi bi-x-circle me-1"></i> Respinse
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-search fs-1 text-muted"></i>
+            </div>
+            <h4 class="text-muted">Niciun rezultat găsit</h4>
+            <p class="text-muted mb-0">Încearcă să schimbi filtrele selectate.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow border-0 hover-effect position-relative">
+
+                        <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
+                            @if (item.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark shadow-sm">Pending</span>
+                            }
+                            else if (item.Status == "Approved")
+                            {
+                                <span class="badge bg-success shadow-sm">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger shadow-sm">Rejected</span>
+                            }
+                        </div>
+
+                        <div class="bg-light rounded-top d-flex align-items-center justify-content-center overflow-hidden" style="height: 200px;">
+                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath" class="w-100 h-100 object-fit-cover" alt="@item.Name"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/400x300?text=No+Image';">
+                            }
+                            else
+                            {
+                                <div class="text-muted text-center">
+                                    <i class="bi bi-image fs-1"></i>
+                                    <p class="mb-0 small">Fără imagine</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-secondary border">
+                                    <i class="bi bi-tag me-1"></i> @(item.Category?.Name ?? "Fără Categorie")
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold text-dark mb-2 text-truncate" title="@item.Name">
+                                @item.Name
+                            </h5>
+
+                            <div class="mt-2 mb-3">
+                                <small class="text-muted d-block">Propus de:</small>
+                                <small class="fw-bold text-dark text-truncate d-block">
+                                    @(item.User?.UserName ?? "Utilizator necunoscut")
+                                </small>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <span class="fw-bold text-brand">@item.Price RON</span>
+                                <span class="text-muted small">Stoc: @item.Stock</span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 p-3">
+                            <div class="d-flex gap-2 w-100">
+                                <a asp-controller="ProductProposals" asp-action="Show" asp-route-id="@item.Id"
+                                   class="btn btn-outline-primary btn-sm flex-grow-1">
+                                    <i class="bi bi-eye"></i> Detalii
+                                </a>
+
+                                @if (item.Status == "Pending")
+                                {
+                                    <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post">
+                                        <button type="submit" class="btn btn-success btn-sm" title="Aprobă">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Respinge">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+
+    .nav-pills .nav-link {
+        transition: all 0.2s;
+    }
+</style>

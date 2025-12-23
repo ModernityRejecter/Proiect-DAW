@@ -161,5 +161,25 @@ namespace Proiect.Controllers
             }
             return RedirectToAction("ManageProposals");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> AllProposals(string status)
+        {
+            var proposals = _context.ProductProposals
+                                    .Include(p => p.User)
+                                    .Include(p => p.Category)
+                                    .AsQueryable();
+
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                proposals = proposals.Where(p => p.Status == status);
+            }
+
+            var result = await proposals.OrderByDescending(p => p.Id).ToListAsync();
+
+            ViewBag.CurrentFilter = status;
+
+            return View(result);
+        }
     }
 }
