@@ -10,14 +10,6 @@
         </h2>
     </div>
 
-    @if (TempData["message"] != null)
-    {
-        <div class="alert @(TempData["messageType"] ?? "alert-success") alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-check-circle me-2"></i> @TempData["message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     @if (!Model.Any())
     {
         <div class="text-center py-5">

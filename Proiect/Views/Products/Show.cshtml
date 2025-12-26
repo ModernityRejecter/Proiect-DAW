@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = Model.Name;
+    // Verificăm sigur dacă ViewBag.IsInWishlist este setat, altfel e false
+    bool isInWishlist = ViewBag.IsInWishlist == true;
 }
 
 <div class="container mt-5 mb-5">
@@ -21,6 +23,7 @@
     <div class="card shadow border-0">
         <div class="card-body p-4">
             <div class="row">
+
                 <div class="col-md-6 mb-4 mb-md-0">
                     <div class="bg-light rounded d-flex align-items-center justify-content-center overflow-hidden border position-relative" style="height: 450px;">
                         @if (!string.IsNullOrEmpty(Model.ImagePath))
@@ -123,8 +126,7 @@
                                 <div class="alert alert-danger mb-0 d-flex align-items-center">
                                     <i class="bi bi-exclamation-circle-fill me-2 fs-4"></i>
                                     <div>
-                                        <strong>Indisponibil momentan.</strong>
-                                        <br>Acest produs nu mai este pe stoc.
+                                        <strong>Indisponibil momentan.</strong><br>Acest produs nu mai este pe stoc.
                                     </div>
                                 </div>
                             }
@@ -133,14 +135,25 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <div class="mt-3 text-center text-sm-start">
-                                <form asp-controller="Wishlist" asp-action="Add" method="post" class="d-inline">
+                                <form asp-controller="Wishlist" asp-action="Toggle" method="post" class="d-inline">
                                     <input type="hidden" name="productId" value="@Model.Id" />
-                                    <button type="submit" class="btn btn-link text-decoration-none text-danger p-0">
-                                        <i class="bi bi-heart me-1"></i> Adaugă la Favorite (Wishlist)
-                                    </button>
+
+                                    @if (isInWishlist)
+                                    {
+                                        <button type="submit" class="btn btn-link text-decoration-none text-danger p-0 fw-bold">
+                                            <i class="bi bi-heart-fill me-1"></i> Scoate de la Favorite
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-link text-decoration-none text-danger p-0">
+                                            <i class="bi bi-heart me-1"></i> Adaugă la Favorite
+                                        </button>
+                                    }
                                 </form>
                             </div>
                         }
+
                     </div>
                 </div>
             </div>
@@ -154,8 +167,7 @@
         value = isNaN(value) ? 1 : value;
         var max = parseInt(document.getElementById('quantity').getAttribute('max'), 10);
         if(value < max){
-            value++;
-            document.getElementById('quantity').value = value;
+            document.getElementById('quantity').value = value + 1;
         }
     }
 
@@ -163,8 +175,7 @@
         var value = parseInt(document.getElementById('quantity').value, 10);
         value = isNaN(value) ? 1 : value;
         if(value > 1){
-            value--;
-            document.getElementById('quantity').value = value;
+            document.getElementById('quantity').value = value - 1;
         }
     }
 </script>

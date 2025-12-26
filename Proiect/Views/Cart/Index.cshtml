@@ -2,20 +2,14 @@
 @{
     ViewData["Title"] = "Coșul meu";
     decimal totalPrice = ViewBag.TotalPrice != null ? (decimal)ViewBag.TotalPrice : 0;
+
+    var wishlistIds = ViewBag.WishlistProductIds as List<int> ?? new List<int>();
 }
 
 <div class="container mt-4 mb-5">
     <h2 class="fw-bold text-brand mb-4">
         <i class="bi bi-cart3 me-2"></i>Coșul de cumpărături
     </h2>
-
-    @if (TempData["message"] != null)
-    {
-        <div class="alert @(TempData["messageType"] ?? "alert-success") alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-info-circle me-2"></i> @TempData["message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
 
     @if (!Model.Items.Any())
     {
@@ -34,7 +28,7 @@
     {
         <div class="row g-4">
             <div class="col-lg-8">
-
+                
                 <div class="d-none d-md-flex row fw-bold text-muted small text-uppercase px-3 mb-2">
                     <div class="col-md-6">Produs</div>
                     <div class="col-md-3 text-center">Cantitate</div>
@@ -48,7 +42,7 @@
                         <div class="card shadow-sm border-0 position-relative">
                             <div class="card-body p-3">
                                 <div class="row align-items-center gy-3">
-
+                                    
                                     <div class="col-12 col-md-6">
                                         <div class="d-flex align-items-center">
                                             <div class="rounded border d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0 me-3" style="width: 70px; height: 70px;">
@@ -67,18 +61,34 @@
                                                         @item.Product?.Name
                                                     </a>
                                                 </h6>
+                                                @if (!item.Product.IsActive || item.Product.Stock < item.Quantity)
+                                                {
+                                                    <div class="text-danger small fw-bold">
+                                                        <i class="bi bi-exclamation-circle"></i> Indisponibil / Stoc insuficient
+                                                    </div>
+                                                }
                                                 <div class="text-muted small">Preț unitar: @item.Price RON</div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="col-6 col-md-3 d-flex justify-content-md-center">
-                                        <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center" style="max-width: 120px;">
+                                        <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center">
                                             <input type="hidden" name="itemId" value="@item.Id" />
-                                            <div class="input-group input-group-sm">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="changeQty(this, -1)">-</button>
-                                                <input type="number" name="quantity" class="form-control text-center bg-white" value="@item.Quantity" min="1" max="@item.Product?.Stock" readonly onchange="this.form.submit()">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="changeQty(this, 1)">+</button>
+                                            <input type="hidden" name="quantity" value="@item.Quantity" max="@item.Product?.Stock">
+
+                                            <div class="d-flex align-items-center bg-white border rounded-pill p-1 shadow-sm">
+                                                <button class="btn btn-qty rounded-circle" type="button" onclick="changeQty(this, -1)">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                
+                                                <span class="fw-bold mx-3 user-select-none text-dark" style="min-width: 20px; text-align: center;">
+                                                    @item.Quantity
+                                                </span>
+                                                
+                                                <button class="btn btn-qty rounded-circle" type="button" onclick="changeQty(this, 1)">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
                                             </div>
                                         </form>
                                     </div>
@@ -89,13 +99,27 @@
                                         </span>
                                     </div>
 
-                                    <div class="col-1 col-md-1 text-end">
+                                    <div class="col-1 col-md-1 text-end d-flex flex-column align-items-end gap-2">
+
+                                        @{
+                                            bool isInWishlist = wishlistIds.Contains(item.ProductId);
+                                        }
+
+                                        <form asp-controller="Wishlist" asp-action="Toggle" method="post">
+                                            <input type="hidden" name="productId" value="@item.ProductId" />
+                                            <button type="submit" class="btn btn-link p-0 shadow-none border-0"
+                                                    title="@(isInWishlist ? "Scoate de la favorite" : "Salvează la favorite")">
+                                                <i class="bi @(isInWishlist ? "bi-heart-fill text-danger" : "bi-heart text-muted") fs-5"></i>
+                                            </button>
+                                        </form>
+
                                         <form asp-action="RemoveFromCart" method="post">
                                             <input type="hidden" name="itemId" value="@item.Id" />
-                                            <button type="submit" class="btn btn-link text-danger p-0 shadow-none" title="Șterge">
+                                            <button type="submit" class="btn btn-link text-danger p-0 shadow-none" title="Elimină din coș">
                                                 <i class="bi bi-trash fs-5"></i>
                                             </button>
                                         </form>
+
                                     </div>
 
                                 </div>
@@ -144,12 +168,14 @@
 
 <script>
     function changeQty(btn, change) {
-        var input = btn.parentElement.querySelector('input[name="quantity"]');
+        var input = btn.closest('form').querySelector('input[name="quantity"]');
         var currentVal = parseInt(input.value);
         var maxVal = parseInt(input.getAttribute('max'));
 
         var newVal = currentVal + change;
-        if (newVal >= 1 && newVal <= maxVal) {
+        
+        // Verificăm limitele (minim 1 și maxim stocul disponibil)
+        if (newVal >= 1 && (isNaN(maxVal) || newVal <= maxVal)) {
             input.value = newVal;
             btn.closest('form').submit();
         }
@@ -159,5 +185,28 @@
 <style>
     .object-fit-cover {
         object-fit: cover;
+    }
+
+    .btn-qty {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+        background-color: #f9fafb;
+        transition: all 0.2s;
+    }
+
+    .btn-qty:hover {
+        background-color: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+    }
+
+    .user-select-none {
+        user-select: none;
     }
 </style>

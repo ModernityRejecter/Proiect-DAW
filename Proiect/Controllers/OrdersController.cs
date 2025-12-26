@@ -75,6 +75,13 @@ namespace Proiect.Controllers
 
             foreach (var item in cart.Items)
             {
+                if (!item.Product.IsActive)
+                {
+                    TempData["message"] = $"Produsul {item.Product.Name} nu mai este disponibil.";
+                    TempData["messageType"] = "alert-danger";
+                    return RedirectToAction("Index", "Cart");
+                }
+
                 if (item.Product.Stock < item.Quantity)
                 {
                     TempData["message"] = $"Stoc insuficient pentru produsul: {item.Product.Name}";

@@ -51,10 +51,22 @@ namespace Proiect.Controllers
             }
 
             ViewBag.Categories = await db.Categories.OrderBy(c => c.Name).ToListAsync();
-
             ViewBag.CurrentSearch = searchString;
             ViewBag.CurrentCategory = categoryId;
             ViewBag.CurrentSort = sortOrder;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserId(User);
+                ViewBag.WishlistProductIds = await db.WishlistItems
+                    .Where(w => w.Wishlist.UserId == userId)
+                    .Select(w => w.ProductId)
+                    .ToListAsync();
+            }
+            else
+            {
+                ViewBag.WishlistProductIds = new List<int>();
+            }
 
             return View(await products.ToListAsync());
         }
@@ -68,6 +80,19 @@ namespace Proiect.Controllers
             if (product == null || !product.IsActive)
             {
                 return NotFound();
+            }
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserId(User);
+                var existsInWishlist = await db.WishlistItems
+                    .AnyAsync(w => w.Wishlist.UserId == userId && w.ProductId == id);
+
+                ViewBag.IsInWishlist = existsInWishlist;
+            }
+            else
+            {
+                ViewBag.IsInWishlist = false;
             }
 
             return View(product);

@@ -40,6 +40,11 @@ namespace Proiect.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            ViewBag.WishlistProductIds = await _context.WishlistItems
+                .Where(w => w.Wishlist.UserId == user.Id)
+                .Select(w => w.ProductId)
+                .ToListAsync();
+
             ViewBag.TotalPrice = cart.Items.Sum(i => i.Quantity * i.Price);
 
             return View(cart);
@@ -52,12 +57,21 @@ namespace Proiect.Controllers
             if (user == null) return Challenge();
 
             var product = await _context.Products.FindAsync(productId);
-            if (product == null || product.Stock < quantity)
+
+            if (product == null || !product.IsActive)
+            {
+                TempData["message"] = "Produsul nu este disponibil.";
+                TempData["messageType"] = "alert-danger";
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+
+            if (product.Stock < quantity)
             {
                 TempData["message"] = "Produsul nu este disponibil în cantitatea selectată.";
                 TempData["messageType"] = "alert-danger";
                 return Redirect(Request.Headers["Referer"].ToString());
             }
+            
 
             var cart = await _context.ShoppingCarts
                                      .Include(c => c.Items)
