@@ -6,82 +6,147 @@
 }
 
 <div class="container mt-4 mb-5">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-brand mb-1">Comanda #@Model.Id</h2>
-            <p class="text-muted mb-0">Plasată pe @Model.Date.ToString("dd MMMM yyyy, HH:mm")</p>
-        </div>
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Înapoi la Istoric
-        </a>
+        <h2 class="fw-bold text-brand mb-0">
+            <i class="bi bi-box-seam me-2"></i>Detaliile Comenzii #@Model.Id
+        </h2>
     </div>
-
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="card-title mb-0 fw-bold">Produse Comandate</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4 py-3 border-0">Produs</th>
-                                    <th class="py-3 border-0 text-center">Cantitate</th>
-                                    <th class="py-3 border-0 text-end pe-4">Preț Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Items)
-                                {
-                                    <tr>
-                                        <td class="ps-4 py-3">
-                                            <div class="d-flex align-items-center">
-                                                @if (!string.IsNullOrEmpty(item.Product?.ImagePath))
-                                                {
-                                                    <img src="@item.Product.ImagePath" class="rounded border me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                }
-                                                <div>
-                                                    <div class="fw-bold">@item.Product?.Name</div>
-                                                    <div class="text-muted small">PU: @item.Price RON</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="text-center">@item.Quantity</td>
-                                        <td class="text-end pe-4 fw-medium">@((item.Price * item.Quantity).ToString("0.00")) RON</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+            <div class="d-flex flex-column gap-3">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="card shadow-sm border-0 position-relative hover-effect">
+                        <div class="card-body p-3">
+                            <div class="row align-items-center gy-3">
+
+                                <div class="col-3 col-sm-2 col-md-2">
+                                    <div class="rounded border d-flex align-items-center justify-content-center overflow-hidden bg-light" style="aspect-ratio: 1/1;">
+                                        @if (!string.IsNullOrEmpty(item.Product?.ImagePath))
+                                        {
+                                            <img src="@item.Product.ImagePath" class="w-100 h-100 object-fit-cover" alt="@item.Product.Name">
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-image text-muted fs-4"></i>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="col-9 col-sm-10 col-md-5">
+                                    <h6 class="mb-1 fw-bold">
+                                        <a asp-controller="Products" asp-action="Show" asp-route-id="@item.ProductId" class="text-decoration-none text-dark stretched-link">
+                                            @item.Product?.Name
+                                        </a>
+                                    </h6>
+                                    <div class="text-muted small">
+                                        Preț unitar: <span class="fw-medium">@item.Price.ToString("0.00") RON</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-md-2 text-md-center">
+                                    <small class="text-muted d-block d-md-none text-uppercase" style="font-size: 0.7rem;">Cantitate</small>
+                                    <span class="badge bg-light text-dark border fs-6 px-3">
+                                        x @item.Quantity
+                                    </span>
+                                </div>
+
+                                <div class="col-6 col-md-3 text-end">
+                                    <small class="text-muted d-block d-md-none text-uppercase" style="font-size: 0.7rem;">Total</small>
+                                    <span class="fw-bold text-brand fs-5">
+                                        @((item.Price * item.Quantity).ToString("0.00")) <small class="fs-6 text-muted">RON</small>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         </div>
 
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 100px;">
                 <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="card-title mb-0 fw-bold">Sumar</h5>
+                    <h5 class="card-title mb-0 fw-bold">Sumar Comandă</h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Status</span>
-                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-3">@Model.Status</span>
+
+                    <div class="mb-4 text-center">
+                        @if (Model.Status == "Livrat" || Model.Status == "Completed")
+                        {
+                            <div class="badge bg-success bg-opacity-10 text-success border border-success px-4 py-2 rounded-pill fs-6">
+                                <i class="bi bi-check-circle me-1"></i> @Model.Status
+                            </div>
+                        }
+                        else if (Model.Status == "Anulat" || Model.Status == "Rejected")
+                        {
+                            <div class="badge bg-danger bg-opacity-10 text-danger border border-danger px-4 py-2 rounded-pill fs-6">
+                                <i class="bi bi-x-circle me-1"></i> @Model.Status
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="badge bg-warning bg-opacity-10 text-warning border border-warning text-dark px-4 py-2 rounded-pill fs-6">
+                                <i class="bi bi-hourglass-split me-1"></i> @Model.Status
+                            </div>
+                        }
                     </div>
+
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Client</span>
-                        <span class="fw-medium">@Model.User?.UserName</span>
+                        <span class="text-muted"><i class="bi bi-calendar3 me-2"></i>Data</span>
+                        <span class="fw-medium">@Model.Date.ToString("dd/MM/yyyy")</span>
                     </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted"><i class="bi bi-clock me-2"></i>Ora</span>
+                        <span class="fw-medium">@Model.Date.ToString("HH:mm")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted"><i class="bi bi-person me-2"></i>Client</span>
+                        <span class="fw-medium">@(Model.User?.UserName ?? "Necunoscut")</span>
+                    </div>
+
                     <hr>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="fs-5 fw-bold">Total</span>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="fs-5 fw-bold text-dark">Total</span>
                         <span class="fs-4 fw-bold text-brand">@grandTotal.ToString("0.00") RON</span>
+                    </div>
+
+                    <div class="d-grid">
+                        <a asp-action="Index" class="btn btn-outline-secondary py-2">
+                            <i class="bi bi-arrow-left me-2"></i> Înapoi la Istoric
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .hover-effect:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+    }
+    /* Face ca tot cardul să fie clickabil datorită link-ului cu clasa stretched-link */
+    .stretched-link::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        content: "";
+    }
+    /* Ridicăm poziția relativă a butoanelor/linkurilor care NU vrem să declanșeze stretched-link */
+    .position-relative {
+        position: relative;
+    }
+</style>

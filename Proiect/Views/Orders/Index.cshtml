@@ -24,40 +24,97 @@
     }
     else
     {
-        <div class="card shadow-sm border-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4 py-3 border-0">ID Comandă</th>
-                            <th class="py-3 border-0">Data</th>
-                            <th class="py-3 border-0">Total</th>
-                            <th class="py-3 border-0">Status</th>
-                            <th class="py-3 border-0 text-end pe-4">Detalii</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var order in Model)
-                        {
-                            decimal total = order.Items.Sum(i => i.Quantity * i.Price);
+        <div class="row g-4">
+            @foreach (var order in Model)
+            {
+                decimal total = order.Items.Sum(i => i.Quantity * i.Price);
+                var previewItems = order.Items.Take(4).ToList();
+                int remainingCount = order.Items.Count - 4;
 
-                            <tr>
-                                <td class="ps-4 fw-bold text-brand">#@order.Id</td>
-                                <td>@order.Date.ToString("dd MMMM yyyy, HH:mm")</td>
-                                <td class="fw-bold">@total.ToString("0.00") RON</td>
-                                <td>
-                                    <span class="badge bg-light text-dark border">@order.Status</span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
-                                        Vezi Comanda
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                <div class="col-md-6 col-lg-6 col-xl-4">
+                    <div class="card shadow-sm border-0 h-100 hover-effect">
+                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">Comanda #@order.Id</span>
+
+                            @if (order.Status == "Livrat")
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">@order.Status</span>
+                            }
+                            else if (order.Status == "Anulat")
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">@order.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning text-dark">@order.Status</span>
+                            }
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Data</small>
+                                    <span class="fw-medium">@order.Date.ToString("dd MMM yyyy")</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Total</small>
+                                    <span class="fw-bold text-brand">@total.ToString("0.00") RON</span>
+                                </div>
+                            </div>
+
+                            <hr class="border-light my-3">
+
+                            <div class="mb-2">
+                                <small class="text-muted mb-2 d-block">Produse:</small>
+                                <div class="d-flex gap-2">
+                                    @foreach (var item in previewItems)
+                                    {
+                                        <div class="position-relative" title="@item.Product?.Name">
+                                            @if (!string.IsNullOrEmpty(item.Product?.ImagePath))
+                                            {
+                                                <img src="@item.Product.ImagePath" class="rounded border" style="width: 48px; height: 48px; object-fit: cover;" alt="Produs">
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded border bg-light d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                </div>
+                                            }
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary border border-light" style="font-size: 0.6rem;">
+                                                x@(item.Quantity)
+                                            </span>
+                                        </div>
+                                    }
+
+                                    @if (remainingCount > 0)
+                                    {
+                                        <div class="rounded border bg-light d-flex align-items-center justify-content-center text-muted fw-bold small" style="width: 48px; height: 48px;">
+                                            +@remainingCount
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                            <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-primary w-100 btn-sm">
+                                Vezi Detalii Complete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+</style>
