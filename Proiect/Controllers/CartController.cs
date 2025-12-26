@@ -45,7 +45,7 @@ namespace Proiect.Controllers
                 .Select(w => w.ProductId)
                 .ToListAsync();
 
-            ViewBag.TotalPrice = cart.Items.Sum(i => i.Quantity * i.Price);
+            ViewBag.TotalPrice = cart.Items.Sum(i => i.Quantity * i.Product.Price);
 
             return View(cart);
         }
@@ -107,8 +107,7 @@ namespace Proiect.Controllers
                 {
                     ProductId = productId,
                     CartId = cart.Id,
-                    Quantity = quantity,
-                    Price = product.Price
+                    Quantity = quantity
                 };
                 _context.CartItems.Add(cartItem);
             }

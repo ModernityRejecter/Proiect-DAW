@@ -67,7 +67,7 @@
                                                         <i class="bi bi-exclamation-circle"></i> Indisponibil / Stoc insuficient
                                                     </div>
                                                 }
-                                                <div class="text-muted small">Preț unitar: @item.Price RON</div>
+                                                <div class="text-muted small">Preț unitar: @item.Product.Price RON</div>
                                             </div>
                                         </div>
                                     </div>
@@ -95,7 +95,7 @@
 
                                     <div class="col-5 col-md-2 text-end">
                                         <span class="fw-bold text-brand fs-5">
-                                            @((item.Price * item.Quantity).ToString("0.00")) <small class="fs-6 text-muted">RON</small>
+                                            @((item.Product.Price * item.Quantity).ToString("0.00")) <small class="fs-6 text-muted">RON</small>
                                         </span>
                                     </div>
 

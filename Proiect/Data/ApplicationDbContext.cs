@@ -20,10 +20,6 @@ namespace Proiect.Data
                 .HasIndex(p => p.Name)
                 .IsUnique();
 
-            builder.Entity<CartItem>()
-                .Property(c => c.Price)
-                .HasColumnType("decimal(18, 2)");
-
             builder.Entity<OrderItem>()
                 .Property(o => o.Price)
                 .HasColumnType("decimal(18, 2)");

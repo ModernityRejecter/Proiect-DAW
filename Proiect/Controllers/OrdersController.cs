@@ -107,7 +107,7 @@ namespace Proiect.Controllers
                     OrderId = order.Id,
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
-                    Price = item.Price
+                    Price = item.Product.Price
                 };
 
                 var product = item.Product;
