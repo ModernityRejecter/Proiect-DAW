@@ -1,0 +1,63 @@
+﻿@model IEnumerable<Proiect.Models.Order>
+
+@{
+    ViewData["Title"] = "Comenzile Mele";
+}
+
+<div class="container mt-4 mb-5">
+    <h2 class="fw-bold text-brand mb-4">
+        <i class="bi bi-box-seam me-2"></i>Istoric Comenzi
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-white shadow-sm rounded">
+            <div class="mb-3">
+                <i class="bi bi-clipboard-x text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h4 class="text-muted">Nu ai plasat nicio comandă</h4>
+            <p class="text-muted mb-4">Istoricul tău de comenzi este gol.</p>
+            <a asp-controller="Products" asp-action="Index" class="btn btn-primary px-4">
+                Începe Cumpărăturile
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 border-0">ID Comandă</th>
+                            <th class="py-3 border-0">Data</th>
+                            <th class="py-3 border-0">Total</th>
+                            <th class="py-3 border-0">Status</th>
+                            <th class="py-3 border-0 text-end pe-4">Detalii</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            decimal total = order.Items.Sum(i => i.Quantity * i.Price);
+
+                            <tr>
+                                <td class="ps-4 fw-bold text-brand">#@order.Id</td>
+                                <td>@order.Date.ToString("dd MMMM yyyy, HH:mm")</td>
+                                <td class="fw-bold">@total.ToString("0.00") RON</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">@order.Status</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+                                        Vezi Comanda
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

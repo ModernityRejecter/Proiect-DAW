@@ -1,0 +1,94 @@
+﻿@model Proiect.Models.Order
+
+@{
+    ViewData["Title"] = $"Comanda #{Model.Id}";
+    decimal grandTotal = Model.Items.Sum(i => i.Quantity * i.Price);
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-brand mb-1">Comanda #@Model.Id</h2>
+            <p class="text-muted mb-0">Plasată pe @Model.Date.ToString("dd MMMM yyyy, HH:mm")</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi la Istoric
+        </a>
+    </div>
+
+    @if (TempData["message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-title mb-0 fw-bold">Produse Comandate</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3 border-0">Produs</th>
+                                    <th class="py-3 border-0 text-center">Cantitate</th>
+                                    <th class="py-3 border-0 text-end pe-4">Preț Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.Product?.ImagePath))
+                                                {
+                                                    <img src="@item.Product.ImagePath" class="rounded border me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                }
+                                                <div>
+                                                    <div class="fw-bold">@item.Product?.Name</div>
+                                                    <div class="text-muted small">PU: @item.Price RON</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end pe-4 fw-medium">@((item.Price * item.Quantity).ToString("0.00")) RON</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-title mb-0 fw-bold">Sumar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Status</span>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-3">@Model.Status</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Client</span>
+                        <span class="fw-medium">@Model.User?.UserName</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold">Total</span>
+                        <span class="fs-4 fw-bold text-brand">@grandTotal.ToString("0.00") RON</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
