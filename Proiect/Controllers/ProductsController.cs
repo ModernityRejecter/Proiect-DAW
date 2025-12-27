@@ -75,6 +75,8 @@ namespace Proiect.Controllers
         {
             var product = await db.Products
                 .Include(p => p.Category)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null || !product.IsActive)

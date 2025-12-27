@@ -56,5 +56,7 @@ namespace Proiect.Models
 
         [NotMapped]
         public IEnumerable<SelectListItem> Categ { get; set; } = Enumerable.Empty<SelectListItem>();
+
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

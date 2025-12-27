@@ -1,0 +1,131 @@
+﻿@model Proiect.Models.Review
+
+@{
+    ViewData["Title"] = "Editare Recenzie";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h4 class="fw-bold text-brand mb-0">
+                            <i class="bi bi-pencil-square me-2"></i>Editare Recenzie
+                        </h4>
+                        <a asp-controller="Products" asp-action="Show" asp-route-id="@Model.ProductId" class="btn-close" aria-label="Close"></a>
+                    </div>
+
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ProductId" />
+                        <input type="hidden" asp-for="UserId" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-4 text-center">
+                            <label class="form-label text-muted fw-bold d-block">Nota acordată</label>
+
+                            <input type="hidden" asp-for="Rating" id="ratingInput" />
+
+                            <div class="d-inline-flex align-items-center" id="starRatingContainer">
+                                <i class="bi bi-star fs-2 mx-1 star-icon" data-value="1" style="cursor: pointer;"></i>
+                                <i class="bi bi-star fs-2 mx-1 star-icon" data-value="2" style="cursor: pointer;"></i>
+                                <i class="bi bi-star fs-2 mx-1 star-icon" data-value="3" style="cursor: pointer;"></i>
+                                <i class="bi bi-star fs-2 mx-1 star-icon" data-value="4" style="cursor: pointer;"></i>
+                                <i class="bi bi-star fs-2 mx-1 star-icon" data-value="5" style="cursor: pointer;"></i>
+                            </div>
+                            <div id="ratingText" class="mt-2 fw-bold text-primary small"></div>
+                            <span asp-validation-for="Rating" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Title" class="form-control" placeholder="Titlu" maxlength="50" required />
+                            <label asp-for="Title">Titlu recenzie</label>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <textarea asp-for="Description" class="form-control" placeholder="Descriere" style="height: 150px" maxlength="400" required></textarea>
+                            <label asp-for="Description">Comentariul tău</label>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary py-2 fw-bold shadow-sm">
+                                <i class="bi bi-check-lg me-1"></i> Salvează Modificările
+                            </button>
+                            <a asp-controller="Products" asp-action="Show" asp-route-id="@Model.ProductId" class="btn btn-outline-secondary py-2">
+                                Renunță
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const stars = document.querySelectorAll('.star-icon');
+            const ratingInput = document.getElementById('ratingInput');
+            const ratingText = document.getElementById('ratingText');
+            const labels = ["", "Foarte slab", "Slab", "Mediu", "Bun", "Excelent"];
+
+            let currentRating = @(Model.Rating ?? 0);
+
+            updateStars(currentRating);
+            if(currentRating > 0) {
+                 ratingText.innerText = labels[currentRating];
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', function () {
+                    const hoverValue = this.getAttribute('data-value');
+                    updateStars(hoverValue);
+                    ratingText.innerText = labels[hoverValue];
+                });
+
+                star.addEventListener('click', function () {
+                    currentRating = this.getAttribute('data-value');
+                    ratingInput.value = currentRating;
+
+                    this.style.transform = "scale(1.3)";
+                    setTimeout(() => this.style.transform = "scale(1)", 200);
+                });
+            });
+
+
+            document.getElementById('starRatingContainer').addEventListener('mouseleave', function () {
+                updateStars(currentRating);
+                if (currentRating > 0) {
+                    ratingText.innerText = labels[currentRating];
+                } else {
+                    ratingText.innerText = "";
+                }
+            });
+
+            function updateStars(value) {
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= value) {
+                        s.classList.remove('bi-star');
+                        s.classList.add('bi-star-fill');
+                        s.classList.add('text-warning');
+                    } else {
+                        s.classList.remove('bi-star-fill');
+                        s.classList.remove('text-warning');
+                        s.classList.add('bi-star');
+                    }
+                });
+            }
+        });
+    </script>
+}

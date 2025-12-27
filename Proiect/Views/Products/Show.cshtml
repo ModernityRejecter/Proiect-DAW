@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = Model.Name;
-    // Verificăm sigur dacă ViewBag.IsInWishlist este setat, altfel e false
     bool isInWishlist = ViewBag.IsInWishlist == true;
 }
 
@@ -160,8 +159,186 @@
         </div>
     </div>
 </div>
+<div class="row mt-5">
+    <div class="col-12">
+
+@if (User.Identity.IsAuthenticated) 
+{
+            <div class="card shadow-sm border-0 mb-5 bg-light">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-3">Lasă o recenzie</h5>
+
+                    <form method="post" asp-controller="Reviews" asp-action="New">
+                        <input type="hidden" name="ProductId" value="@Model.Id" />
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted fw-bold">Nota ta</label>
+
+                                <input type="hidden" name="Rating" id="ratingInput" value="0" required />
+
+                                <div class="d-flex align-items-center" id="starRatingContainer">
+                                    <i class="bi bi-star fs-3 me-1 star-icon" data-value="1" style="cursor: pointer;"></i>
+                                    <i class="bi bi-star fs-3 me-1 star-icon" data-value="2" style="cursor: pointer;"></i>
+                                    <i class="bi bi-star fs-3 me-1 star-icon" data-value="3" style="cursor: pointer;"></i>
+                                    <i class="bi bi-star fs-3 me-1 star-icon" data-value="4" style="cursor: pointer;"></i>
+                                    <i class="bi bi-star fs-3 me-1 star-icon" data-value="5" style="cursor: pointer;"></i>
+
+                                    <span id="ratingText" class="ms-2 small text-muted fw-bold"></span>
+                                </div>
+                                <span class="text-danger small" id="ratingError" style="display:none;">Te rog selectează o notă!</span>
+                            </div>
+
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label small text-muted fw-bold">Titlu</label>
+                                <input type="text" name="Title" class="form-control" placeholder="Rezumat scurt (ex: Produs excelent!)" required maxlength="50" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted fw-bold">Comentariu</label>
+                            <textarea name="Description" class="form-control" rows="3" placeholder="Detaliază experiența ta..." required maxlength="400"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary px-4" onclick="return validateRating()">
+                            <i class="bi bi-send me-2"></i> Trimite Recenzia
+                        </button>
+                    </form>
+                </div>
+            </div>
+}
+else
+{
+            <div class="alert alert-warning shadow-sm border-0 mb-5" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                Trebuie să fii <a asp-area="Identity" asp-page="/Account/Login" class="alert-link">autentificat</a> pentru a lăsa o recenzie.
+            </div>
+}
+        <h3 class="fw-bold border-bottom pb-3 mb-4">Recenzii (@Model.Reviews.Count)</h3>
+        @if (!Model.Reviews.Any())
+        {
+            <div class="alert alert-light text-center border">
+                <p class="mb-0 text-muted">Nu există recenzii pentru acest produs. Fii primul care adaugă una!</p>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var review in Model.Reviews.OrderByDescending(r => r.Date))
+                {
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="fw-bold mb-1">@review.Title</h6>
+                                    <div class="text-warning small mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star"></i>
+                                            }
+                                        }
+                                        <span class="text-muted ms-2 fw-normal">
+                                            - @(review.User?.UserName ?? "Utilizator șters")
+                                        </span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">@review.Date.ToString("dd/MM/yyyy")</small>
+                            </div>
+
+                            <p class="card-text text-secondary">@review.Description</p>
+
+                            @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || review.UserId == ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                            {
+                                <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                                    @if (review.UserId == ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                    {
+                                        <a asp-controller="Reviews" asp-action="Edit" asp-route-id="@review.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil-square"></i> Editează
+                                        </a>
+                                    }
+                                    <form asp-controller="Reviews" asp-action="Delete" asp-route-id="@review.Id" method="post"
+                                          onsubmit="return confirm('Ești sigur că vrei să ștergi această recenzie?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> Șterge
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const stars = document.querySelectorAll('.star-icon');
+        const ratingInput = document.getElementById('ratingInput');
+        const ratingText = document.getElementById('ratingText');
+        const labels = ["", "Foarte slab", "Slab", "Mediu", "Bun", "Excelent"];
+
+        let currentRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('mouseenter', function () {
+                const hoverValue = this.getAttribute('data-value');
+                updateStars(hoverValue);
+                ratingText.innerText = labels[hoverValue];
+                ratingText.className = "ms-2 small fw-bold text-primary";
+            });
+
+            star.addEventListener('click', function () {
+                currentRating = this.getAttribute('data-value');
+                ratingInput.value = currentRating;
+
+                this.style.transform = "scale(1.2)";
+                setTimeout(() => this.style.transform = "scale(1)", 200);
+            });
+        });
+
+
+        document.getElementById('starRatingContainer').addEventListener('mouseleave', function () {
+            updateStars(currentRating);
+            if (currentRating > 0) {
+                ratingText.innerText = labels[currentRating];
+                ratingText.className = "ms-2 small fw-bold text-dark";
+            } else {
+                ratingText.innerText = "";
+            }
+        });
+
+        function updateStars(value) {
+            stars.forEach(s => {
+                if (s.getAttribute('data-value') <= value) {
+                    s.classList.remove('bi-star');
+                    s.classList.add('bi-star-fill');
+                    s.classList.add('text-warning');
+                } else {
+                    s.classList.remove('bi-star-fill');
+                    s.classList.remove('text-warning');
+                    s.classList.add('bi-star');
+                }
+            });
+        }
+    });
+
+    function validateRating() {
+        const rating = document.getElementById('ratingInput').value;
+        if (rating == "0" || rating == "") {
+            document.getElementById('ratingError').style.display = 'block';
+            return false;
+        }
+        return true;
+    }
     function incrementValue() {
         var value = parseInt(document.getElementById('quantity').value, 10);
         value = isNaN(value) ? 1 : value;

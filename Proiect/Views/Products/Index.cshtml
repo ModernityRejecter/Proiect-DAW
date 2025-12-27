@@ -67,7 +67,6 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
             @foreach (var product in Model)
             {
-                // Verificăm dacă produsul curent e în wishlist
                 bool isInWishlist = wishlistIds.Contains(product.Id);
 
                 <div class="col">
@@ -127,7 +126,7 @@
                             <div class="mb-3 text-warning small">
                                 @if (product.Rating.HasValue && product.Rating > 0)
                                 {
-                                    <span><i class="bi bi-star-fill"></i> @product.Rating</span>
+                                    <span><i class="bi bi-star-fill"></i> @(product.Rating?.ToString("0.0") ?? "0.0")</span>
                                 }
                                 else
                                 {
