@@ -17,7 +17,7 @@ namespace Proiect.Controllers
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _env = env;
 
-        [Authorize(Roles = "Admin,Colaborator")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Index()
         {
             var proposals = db.ProductProposals
