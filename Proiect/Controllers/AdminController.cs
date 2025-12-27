@@ -118,6 +118,7 @@ namespace Proiect.Controllers
             var proposals = await _context.ProductProposals
                                           .Include(p => p.User)
                                           .Include(p => p.Category)
+                                          .Include(op => op.Feedbacks)
                                           .Where(p => p.Status == "Pending")
                                           .ToListAsync();
             return View(proposals);

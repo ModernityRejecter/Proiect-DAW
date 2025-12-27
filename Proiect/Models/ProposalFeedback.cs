@@ -12,9 +12,10 @@ namespace Proiect.Models
         [StringLength(400, ErrorMessage = "Message must be at most 400 characters long")]
         public string Message { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
+        public bool IsRead { get; set; } = false;
 
         //--------------------------------------------------------
-        
+
         public string UserId { get; set; }
 
         public virtual ApplicationUser User { get; set;}

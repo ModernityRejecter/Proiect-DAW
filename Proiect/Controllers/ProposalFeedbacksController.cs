@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Proiect.Data;
 using Proiect.Models;
+using System.Runtime.InteropServices;
 
 namespace Proiect.Controllers
 {
@@ -20,6 +22,43 @@ namespace Proiect.Controllers
             ICollection<ProposalFeedback> texts = new List<ProposalFeedback>();
             texts = db.ProposalFeedbacks.ToList();
             return View(texts);
+        }
+
+        public async Task<IActionResult> Chat(int id)
+        {
+            ProductProposal? proposal = await db.ProductProposals
+                                            .Include(p => p.User)
+                                            .Include(p => p.Feedbacks)
+                                                .ThenInclude(f => f.User)
+                                            .FirstOrDefaultAsync(p => p.Id == id);
+            if (proposal is null)
+            {
+                return NotFound();
+            }
+
+            string currentUserId = _userManager.GetUserId(User);
+
+            if (proposal.UserId != currentUserId && !User.IsInRole("Admin")) 
+            {
+                return Forbid();
+            }
+
+            ICollection<ProposalFeedback> unreadTexts = await db.ProposalFeedbacks
+                                                            .Where(f => f.UserId != currentUserId && f.IsRead == false)
+                                                            .ToListAsync();
+            if (unreadTexts.Count > 0)
+            {
+                foreach (ProposalFeedback text in unreadTexts)
+                {
+                    text.IsRead = true;
+                }
+                db.SaveChangesAsync();
+            }
+            proposal.Feedbacks = proposal.Feedbacks.
+                OrderBy(f => f.Date).
+                ToList();
+
+            return View(proposal);
         }
 
 

@@ -1,0 +1,98 @@
+﻿@model Proiect.Models.ProductProposal
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Chat - " + Model.Name;
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h4 class="fw-bold mb-1">
+                <i class="bi bi-chat-dots-fill text-primary me-2"></i>Discuție: @Model.Name
+            </h4>
+            <p class="text-muted mb-0 small">
+                Status produs: <span class="badge @(Model.Status == "Pending" ? "bg-warning text-dark" : (Model.Status == "Approved" ? "bg-success" : "bg-danger"))">@Model.Status</span>
+                | Participant: <strong>@(User.IsInRole("Admin") ? Model.User?.UserName : "Admin")</strong>
+            </p>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Înapoi
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm bg-light" style="height: 60vh;">
+        <div class="card-body p-4 d-flex flex-column">
+
+            <div class="chat-history flex-grow-1 overflow-auto mb-3 pe-2" id="chatHistory">
+                @if (!Model.Feedbacks.Any())
+                {
+                    <div class="text-center text-muted h-100 d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-chat-square-text fs-1 mb-2"></i>
+                        <p>Începe conversația! Scrie primul mesaj.</p>
+                    </div>
+                }
+                else
+                {
+                    foreach (var msg in Model.Feedbacks)
+                    {
+                        bool isMe = msg.UserId == currentUserId;
+
+                        <div class="d-flex mb-3 @(isMe ? "justify-content-end" : "justify-content-start")">
+                            <div class="msg-container d-flex flex-column @(isMe ? "align-items-end" : "align-items-start")" style="max-width: 75%;">
+
+                                <div class="msg-bubble p-3 rounded-3 shadow-sm @(isMe ? "bg-primary text-white" : "bg-white text-dark")">
+                                    <p class="mb-0 text-break">@msg.Message</p>
+                                </div>
+
+                                <small class="text-muted mt-1" style="font-size: 0.7rem;">
+                                    @if (!isMe)
+                                    {
+                                        <strong>@(msg.User?.UserName ?? "User")</strong>
+                                        <span>•</span>
+         }
+                                    @msg.Date.ToString("dd/MM HH:mm")
+                                    @if (isMe)
+                                    {
+                                        <i class="bi @(msg.IsRead ? "bi-check-all text-primary" : "bi-check") ms-1" title="@(msg.IsRead ? "Văzut" : "Trimis")"></i>
+                                    }
+                                </small>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            @if (Model.Status != "Approved")
+            {
+                <div class="bg-white p-3 rounded shadow-sm border mt-auto">
+                    <form asp-action="AddFeedback" method="post" class="d-flex gap-2">
+                        <input type="hidden" name="proposalId" value="@Model.Id" />
+                        <input type="text" name="message" class="form-control border-0 bg-light"
+                               placeholder="Scrie un mesaj..." required autocomplete="off" autofocus>
+                        <button class="btn btn-primary px-4" type="submit">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success text-center mb-0">
+                    <i class="bi bi-check-circle-fill"></i> Produsul a fost aprobat. Chat-ul este arhivat.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    // Scroll automat la ultimul mesaj
+    document.addEventListener("DOMContentLoaded", function() {
+        var chatHistory = document.getElementById('chatHistory');
+        if(chatHistory) {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    });
+</script>

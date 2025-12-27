@@ -308,6 +308,7 @@ namespace Proiect.Controllers
             ICollection<ProductProposal> ownProposals = await db.ProductProposals
                                                                 .Where(op => op.UserId == currentUserId)
                                                                 .Include(op => op.Category)
+                                                                .Include(op => op.Feedbacks)
                                                                 .OrderByDescending(op => op.Id)
                                                                 .ToListAsync();
 
