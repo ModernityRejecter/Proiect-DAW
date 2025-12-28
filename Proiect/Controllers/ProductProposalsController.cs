@@ -164,6 +164,7 @@ namespace Proiect.Controllers
                         proposal.Name = requestedProposal.Name;
                         proposal.Description = requestedProposal.Description;
                         proposal.CategoryId = requestedProposal.CategoryId;
+                        proposal.Status = "Pending";
 
                         if (requestedProposal.ImageFile != null && requestedProposal.ImageFile.Length > 0)
                         {
@@ -214,7 +215,6 @@ namespace Proiect.Controllers
                     return View(requestedProposal);
                 }
             }
-
         }
 
         [HttpPost]
@@ -309,6 +309,8 @@ namespace Proiect.Controllers
                                                                 .Where(op => op.UserId == currentUserId)
                                                                 .Include(op => op.Category)
                                                                 .Include(op => op.Feedbacks)
+                                                                // rezolvare temporara, probabil ar fi necesara o filtrare la discretia utilizatorului
+                                                                .Where(op => op.Status == "Pending")
                                                                 .OrderByDescending(op => op.Id)
                                                                 .ToListAsync();
 

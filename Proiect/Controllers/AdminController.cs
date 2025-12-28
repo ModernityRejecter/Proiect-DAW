@@ -128,25 +128,39 @@ namespace Proiect.Controllers
         public async Task<IActionResult> ApproveProposal(int id)
         {
             var proposal = await _context.ProductProposals.FindAsync(id);
+            Product? product = await _context.Products
+                                    .FirstOrDefaultAsync(p => p.ProposalId == id);
+
             if (proposal == null) return NotFound();
-
-            var newProduct = new Product
+            if (product is null)
             {
-                Name = proposal.Name,
-                Description = proposal.Description,
-                Price = (decimal)proposal.Price,
-                Stock = proposal.Stock,
-                ImagePath = proposal.ImagePath,
-                CategoryId = proposal.CategoryId,
-                ProposalId = proposal.Id,
-                Rating = 0
-            };
-
-            _context.Products.Add(newProduct);
+                var newProduct = new Product
+                {
+                    Name = proposal.Name,
+                    Description = proposal.Description,
+                    Price = proposal.Price,
+                    Stock = proposal.Stock,
+                    ImagePath = proposal.ImagePath,
+                    CategoryId = proposal.CategoryId,
+                    ProposalId = proposal.Id,
+                    Rating = 0
+                };
+                _context.Products.Add(newProduct);
+                TempData["message"] = "Produsul a fost aprobat și publicat.";
+            }
+            else
+            {
+                product.Name = proposal.Name;
+                product.Description = proposal.Description;
+                product.Price = proposal.Price;
+                product.Stock = proposal.Stock;
+                product.ImagePath = proposal.ImagePath;
+                product.CategoryId = proposal.CategoryId;
+                TempData["message"] = "Produsul a fost actualizat.";
+            }
             proposal.Status = "Approved";
 
             await _context.SaveChangesAsync();
-            TempData["message"] = "Produsul a fost aprobat și publicat.";
             return RedirectToAction("ManageProposals");
         }
 
