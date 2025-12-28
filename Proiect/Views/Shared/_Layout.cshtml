@@ -15,34 +15,42 @@
 @using Proiect.Models
 @using Proiect.Data
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext DbContext
+@using Microsoft.Extensions.DependencyInjection
+
+@inject IServiceScopeFactory ScopeFactory
 @inject UserManager<ApplicationUser> UserManager
 
 @{
         int wishlistCount = 0;
         int cartCount = 0;
+        List<Category> navbarCategories = new List<Category>();
 
-        if (User.Identity.IsAuthenticated)
+        using (var scope = ScopeFactory.CreateScope())
         {
-                var userId = UserManager.GetUserId(User);
-                if (!string.IsNullOrEmpty(userId))
+                var scopedContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                navbarCategories = scopedContext.Categories.OrderBy(c => c.Name).ToList();
+
+                if (User.Identity.IsAuthenticated)
                 {
-                        var cart = DbContext.ShoppingCarts
+                        var userId = UserManager.GetUserId(User);
+                        if (!string.IsNullOrEmpty(userId))
+                        {
+                                var cart = scopedContext.ShoppingCarts
                                                                 .Include(c => c.Items)
                                                                 .FirstOrDefault(c => c.UserId == userId);
+                                if (cart != null)
+                                {
+                                        cartCount = cart.Items.Sum(i => i.Quantity);
+                                }
 
-                        if (cart != null)
-                        {
-                                cartCount = cart.Items.Sum(i => i.Quantity);
-                        }
-
-                        var wishlist = DbContext.Wishlists
-                                                                        .Include(w => w.Items)
-                                                                        .FirstOrDefault(w => w.UserId == userId);
-
-                        if (wishlist != null)
-                        {
-                                wishlistCount = wishlist.Items.Count;
+                                var wishlist = scopedContext.Wishlists
+                                                                .Include(w => w.Items)
+                                                                .FirstOrDefault(w => w.UserId == userId);
+                                if (wishlist != null)
+                                {
+                                        wishlistCount = wishlist.Items.Count;
+                                }
                         }
                 }
         }
@@ -95,11 +103,8 @@
                                 Produse
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm">
-                                @{
-                                    var categories = DbContext.Categories.OrderBy(c => c.Name).ToList();
-                                }
 
-                                @foreach (var category in categories)
+                                @foreach (var category in navbarCategories)
                                 {
                                     <li>
                                         <a class="dropdown-item"
