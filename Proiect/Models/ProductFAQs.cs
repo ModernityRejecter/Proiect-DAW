@@ -10,8 +10,7 @@ namespace Proiect.Models
         [Required(ErrorMessage = "Question field is required")]
         public string Question { get; set; }
 
-        [Required(ErrorMessage = "Answer field is required")]
-        public string Answer { get; set; }
+        public string? Answer { get; set; }
 
         //------------------------------------------------------
 

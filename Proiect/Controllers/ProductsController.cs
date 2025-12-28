@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Proiect.Data;
 using Proiect.Models;
+using Proiect.Services;
 
 namespace Proiect.Controllers
 {
@@ -77,7 +78,7 @@ namespace Proiect.Controllers
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (product == null || !product.IsActive)
+            if (product == null)
             {
                 return NotFound();
             }
@@ -228,6 +229,69 @@ namespace Proiect.Controllers
         public IActionResult Search(string searchString)
         {
             return RedirectToAction("Index", new { searchString = searchString });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AskProductAssistant(
+            [FromServices] Proiect.Services.GeminiService geminiService,
+            [FromForm] int productId,
+            [FromForm] string question)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(question))
+                {
+                    return Json(new { success = false, answer = "Te rog scrie o întrebare." });
+                }
+
+                var product = await db.Products
+                    .Include(p => p.Category)
+                    .FirstOrDefaultAsync(p => p.Id == productId);
+
+                if (product == null)
+                    return Json(new { success = false, answer = "Produsul nu a fost găsit." });
+
+                var existingFaqs = await db.ProductFAQs
+                    .Where(f => f.ProductId == productId)
+                    .ToListAsync();
+
+                string aiResponse = await geminiService.GetAnswerAsync(product, existingFaqs, question);
+
+                if (aiResponse != "NU_STIU")
+                {
+                    bool alreadyExists = existingFaqs.Any(f => f.Question.Equals(question, StringComparison.OrdinalIgnoreCase));
+
+                    if (!alreadyExists)
+                    {
+                        var newFaq = new Proiect.Models.ProductFAQs
+                        {
+                            ProductId = productId,
+                            Question = question,
+                            Answer = aiResponse
+                        };
+                        db.ProductFAQs.Add(newFaq);
+                        await db.SaveChangesAsync();
+                    }
+                    return Json(new { success = true, answer = aiResponse });
+                }
+                else
+                {
+                    var newFaq = new Proiect.Models.ProductFAQs
+                    {
+                        ProductId = productId,
+                        Question = question,
+                        Answer = null
+                    };
+                    db.ProductFAQs.Add(newFaq);
+                    await db.SaveChangesAsync();
+
+                    return Json(new { success = true, answer = "Momentan nu avem detalii despre acest aspect." });
+                }
+            }
+            catch
+            {
+                return Json(new { success = false, answer = "A apărut o eroare internă." });
+            }
         }
 
         //---------------------------------------------------------------------------

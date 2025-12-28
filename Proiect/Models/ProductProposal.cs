@@ -14,7 +14,6 @@ namespace Proiect.Models
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Product description field is required")]
-        [StringLength(400, ErrorMessage = "Product description must be at most 400 characters long")]
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Product price field is required")]

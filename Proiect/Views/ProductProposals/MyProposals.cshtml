@@ -12,14 +12,6 @@
         </a>
     </div>
 
-    @if (ViewBag.Message != null)
-    {
-        <div class="alert @(ViewBag.MessageType ?? "alert-success") alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-check-circle me-2"></i> @ViewBag.Message
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     @if (ViewBag.Proposals == null || ((IEnumerable<Proiect.Models.ProductProposal>)ViewBag.Proposals).Count() == 0)
     {
         <div class="text-center py-5">
