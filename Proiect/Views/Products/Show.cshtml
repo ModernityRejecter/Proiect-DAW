@@ -115,11 +115,8 @@
                     <h2 class="text-brand fw-bold mb-4 display-5">@Model.Price <small class="fs-4 text-muted">RON</small></h2>
 
                     <div class="mb-4">
-                        <label class="fw-bold text-muted small">Descriere:</label>
-
-                        <div class="card-text mt-1 text-secondary lh-lg" style="white-space: pre-line;">
-                            @Model.Description
-                        </div>
+                        <h6 class="text-uppercase text-muted fw-bold small mb-1">Descriere</h6>
+                        <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">@Model.Description</p>
                     </div>
 
                     <div class="mt-auto">
@@ -295,8 +292,8 @@
                                     }
                                 </div>
 
-                                <h6 class="fw-bold">@review.Title</h6>
-                                <p class="text-secondary mb-0" style="white-space: pre-wrap;">@review.Description</p>
+                                <h6 class="fw-bold mb-1">@review.Title</h6>
+                                <p class="text-secondary mb-0" style="white-space: pre-line;">@review.Description</p>
                             </div>
                         </div>
                     }

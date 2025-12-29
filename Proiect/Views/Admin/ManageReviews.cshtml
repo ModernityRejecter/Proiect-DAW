@@ -25,8 +25,8 @@
                     <td>@review.User?.Email</td>
                     <td>@review.Rating <i class="bi bi-star-fill text-warning"></i></td>
                     <td>
-                        <strong>@review.Title</strong><br />
-                        @review.Description
+                        <div class="fw-bold">@review.Title</div>
+                        <span style="white-space: pre-line;">@review.Description</span>
                     </td>
                     <td>
                         <form asp-action="DeleteReview" asp-route-id="@review.Id" method="post" onsubmit="return confirm('Ștergi recenzia?');">
