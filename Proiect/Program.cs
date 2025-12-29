@@ -16,6 +16,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+
+builder.Services.AddTransient<Proiect.Services.GeminiService>();
+
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
