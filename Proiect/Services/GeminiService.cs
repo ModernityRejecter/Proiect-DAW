@@ -19,7 +19,7 @@ namespace Proiect.Services
 
             if (string.IsNullOrEmpty(apiKey) || apiKey.Contains("YOUR_API_KEY"))
             {
-                return "Eroare configurare API Key";
+                return "Eroare configurare Gemini API Key. Verificați secrets.json (recomandat) sau appsettings.json (riscant).";
             }
 
             var client = new Client(apiKey: apiKey);
