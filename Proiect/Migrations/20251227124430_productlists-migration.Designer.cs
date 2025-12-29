@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proiect.Data;
 
@@ -11,9 +12,11 @@ using Proiect.Data;
 namespace Proiect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251227124430_productlists-migration")]
+    partial class productlistsmigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -346,7 +349,8 @@ namespace Proiect.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
@@ -391,6 +395,7 @@ namespace Proiect.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Answer")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")
@@ -420,7 +425,8 @@ namespace Proiect.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
@@ -462,9 +468,6 @@ namespace Proiect.Migrations
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -513,6 +516,7 @@ namespace Proiect.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -753,14 +757,16 @@ namespace Proiect.Migrations
             modelBuilder.Entity("Proiect.Models.Review", b =>
                 {
                     b.HasOne("Proiect.Models.Product", "Product")
-                        .WithMany("Reviews")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Proiect.Models.ApplicationUser", "User")
                         .WithMany("Reviews")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
 
@@ -826,11 +832,6 @@ namespace Proiect.Migrations
             modelBuilder.Entity("Proiect.Models.Order", b =>
                 {
                     b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("Proiect.Models.Product", b =>
-                {
-                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("Proiect.Models.ProductProposal", b =>

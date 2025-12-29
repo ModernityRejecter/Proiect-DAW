@@ -17,7 +17,7 @@ namespace Proiect.Controllers
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _env = env;
 
-        [Authorize(Roles = "Admin,Colaborator")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Index()
         {
             var proposals = db.ProductProposals
@@ -65,12 +65,9 @@ namespace Proiect.Controllers
         {
             proposal.UserId = _userManager.GetUserId(User);
 
-            if (proposal.ImageFile != null)
+            if (proposal.ImageFile != null && !IsValidImageSignature(proposal.ImageFile))
             {
-                if (!IsValidImageSignature(proposal.ImageFile))
-                {
                     ModelState.AddModelError("ImageFile", "Fișierul nu este o imagine validă sau este corupt.");
-                }
             }
 
             if (ModelState.IsValid)
@@ -100,7 +97,7 @@ namespace Proiect.Controllers
                     db.ProductProposals.Add(proposal);
                     await db.SaveChangesAsync();
 
-                    TempData["message"] = "Produsul a fost propus cu succes!";
+                    TempData["message"] = "Propunerea a fost adaugată";
                     TempData["messageType"] = "alert-success";
                     return RedirectToAction("MyProposals");
                 }
@@ -150,7 +147,7 @@ namespace Proiect.Controllers
             }
             else
             {
-                if (requestedProposal.ImageFile == null)
+                if (requestedProposal.ImageFile is null && !string.IsNullOrEmpty(proposal.ImagePath))
                 {
                     ModelState.Remove("ImageFile");
                 }
@@ -164,6 +161,7 @@ namespace Proiect.Controllers
                         proposal.Name = requestedProposal.Name;
                         proposal.Description = requestedProposal.Description;
                         proposal.CategoryId = requestedProposal.CategoryId;
+                        proposal.Status = "Pending";
 
                         if (requestedProposal.ImageFile != null && requestedProposal.ImageFile.Length > 0)
                         {
@@ -214,7 +212,6 @@ namespace Proiect.Controllers
                     return View(requestedProposal);
                 }
             }
-
         }
 
         [HttpPost]
@@ -308,6 +305,9 @@ namespace Proiect.Controllers
             ICollection<ProductProposal> ownProposals = await db.ProductProposals
                                                                 .Where(op => op.UserId == currentUserId)
                                                                 .Include(op => op.Category)
+                                                                .Include(op => op.Feedbacks)
+                                                                // rezolvare temporara, probabil ar fi necesara o filtrare la discretia utilizatorului
+                                                                .Where(op => op.Status == "Pending")
                                                                 .OrderByDescending(op => op.Id)
                                                                 .ToListAsync();
 

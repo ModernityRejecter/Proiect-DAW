@@ -8,13 +8,14 @@ namespace Proiect.Models
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage =  "Message is required")]
-        [StringLength(400, ErrorMessage = "Message must be at most 400 characters long")]
+        [Required(ErrorMessage =  "Este necesar să inserați un mesaj")]
+        [StringLength(1000, ErrorMessage = "Lungimea mesajului trebuie să fie de maxim 1000 caractere")]
         public string Message { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
+        public bool IsRead { get; set; } = false;
 
         //--------------------------------------------------------
-        
+
         public string UserId { get; set; }
 
         public virtual ApplicationUser User { get; set;}

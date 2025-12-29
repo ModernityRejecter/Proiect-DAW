@@ -7,7 +7,7 @@ namespace Proiect.Models
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Question field is required")]
+        [Required(ErrorMessage = "Este necesar să inserați o întrebare")]
         public string Question { get; set; }
 
         public string? Answer { get; set; }

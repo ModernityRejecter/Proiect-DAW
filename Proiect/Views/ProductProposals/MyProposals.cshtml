@@ -1,5 +1,8 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@{
     ViewData["Title"] = "Propunerile Mele";
+    var currentUserId = UserManager.GetUserId(User);
 }
 
 <div class="container mt-4">
@@ -96,7 +99,28 @@
 
                         <div class="card-footer bg-white border-top-0 p-3">
                             <div class="d-grid gap-2">
-                                <a asp-action="Show" asp-route-id="@proposal.Id" class="btn btn-outline-primary btn-sm">
+
+                                @{
+                                    int unreadCount = 0;
+                                    if (proposal.Feedbacks != null)
+                                    {
+                                        var feedbacks = (IEnumerable<Proiect.Models.ProposalFeedback>)proposal.Feedbacks;
+                                        unreadCount = feedbacks.Count(f => f.UserId != currentUserId && !f.IsRead);
+                                    }
+                                }
+
+                                <a asp-controller="ProposalFeedbacks" asp-action="Chat" asp-route-id="@proposal.Id" class="btn btn-outline-primary btn-sm position-relative">
+                                    <i class="bi bi-chat-text me-1"></i> Chat cu Adminul
+
+                                    @if (unreadCount > 0)
+                                    {
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            @unreadCount
+                                            <span class="visually-hidden">mesaje necitite</span>
+                                        </span>
+                                    }
+                                </a>
+                                <a asp-action="Show" asp-route-id="@proposal.Id" class="btn btn-outline-secondary btn-sm">
                                     <i class="bi bi-eye me-1"></i> Detalii
                                 </a>
 
@@ -127,6 +151,11 @@
             }
         </div>
     }
+    <div class="mt-4">
+        <a asp-controller="Collaborator" asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi la Dashboard
+        </a>
+    </div>
 </div>
 
 <style>

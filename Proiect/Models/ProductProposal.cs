@@ -9,19 +9,20 @@ namespace Proiect.Models
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Product name field is required")]
-        [StringLength(50, ErrorMessage = "Product name must be at most 50 characters long")]
+        [Required(ErrorMessage = "Numele produsului este un câmp obligatoriu")]
+        [StringLength(100, ErrorMessage = "Lungimea numelui trebuie să fie de maxim 100 caractere")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Product description field is required")]
+        [Required(ErrorMessage = "Descrierea produsului este un câmp obligatoriu")]
+        [StringLength(4000, ErrorMessage = "Lungimea descrierii trebuie să fie de maxim 4000 caractere")]
         public string Description { get; set; }
 
-        [Required(ErrorMessage = "Product price field is required")]
-        [Range(0, double.MaxValue, ErrorMessage = "Product price must be a positive number")]
+        [Required(ErrorMessage = "Prețul produsului este un câmp obligatoriu")]
+        [Range(0, double.MaxValue, ErrorMessage = "Prețul trebuie să fie un număr real pozitiv")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "Product stock field is required")]
-        [Range(0, double.MaxValue, ErrorMessage = "Product stock must be a positive number")]
+        [Required(ErrorMessage = "Stockul produsului este un câmp obligatoriu")]
+        [Range(0, double.MaxValue, ErrorMessage = "Stockul trebuie să fie un număr întreg pozitiv")]
         public int Stock { get; set; }
         public string? ImagePath { get; set; }
 

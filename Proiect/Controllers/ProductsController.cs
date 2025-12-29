@@ -76,6 +76,9 @@ namespace Proiect.Controllers
         {
             var product = await db.Products
                 .Include(p => p.Category)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)
+                .Include(p => p.Proposal)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -140,90 +143,30 @@ namespace Proiect.Controllers
             }
             product.Categ = GetAllCategories();
 
-            if (product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            if (product.Proposal.UserId == _userManager.GetUserId(User))
             {
-                return View(product);
+
+                var proposal = product.Proposal;
+
+                proposal.Name = product.Name;
+                proposal.Description = product.Description;
+                proposal.Price = product.Price;
+                proposal.Stock = product.Stock;
+                proposal.CategoryId = (int)product.CategoryId;
+                proposal.ImagePath = product.ImagePath;
+
+
+
+                db.Update(proposal);
+                await db.SaveChangesAsync();
+
+                return Redirect("/ProductProposals/Edit/" + proposal.Id);
             }
             else
             {
                 TempData["message"] = "Nu dețineți drepturile necesare ca să modificați acest produs";
                 TempData["messageType"] = "alert-danger";
                 return RedirectToAction("MyProducts");
-            }
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin,Colaborator")]
-        public async Task<IActionResult> Edit(Product requestedProduct, int id)
-        {
-            Product? product = await db.Products.Include(p => p.Proposal).FirstOrDefaultAsync(p => p.Id == id);
-
-            if (product is null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                if (requestedProduct.ImageFile == null)
-                {
-                    ModelState.Remove("ImageFile");
-                }
-                if (ModelState.IsValid)
-                {
-                    if (product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
-                    {
-                        product.Name = requestedProduct.Name;
-                        product.Description = requestedProduct.Description;
-                        product.Price = requestedProduct.Price;
-                        product.Stock = requestedProduct.Stock;
-                        product.CategoryId = requestedProduct.CategoryId;
-
-                        if (requestedProduct.ImageFile != null && requestedProduct.ImageFile.Length > 0)
-                        {
-                            var storagePath = Path.Combine(_env.WebRootPath, "images", "products");
-                            if (!Directory.Exists(storagePath))
-                            {
-                                Directory.CreateDirectory(storagePath);
-                            }
-
-                            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(requestedProduct.ImageFile.FileName);
-                            var filePath = Path.Combine(storagePath, fileName);
-
-                            using (var memoryStream = new MemoryStream())
-                            {
-                                await requestedProduct.ImageFile.CopyToAsync(memoryStream);
-                                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                                {
-                                    memoryStream.Position = 0;
-                                    await memoryStream.CopyToAsync(fileStream);
-                                }
-                            }
-                            if (!string.IsNullOrEmpty(product.ImagePath))
-                            {
-                                var oldPath = Path.Combine(_env.WebRootPath, product.ImagePath.TrimStart('/'));
-                                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                            }
-                            product.ImagePath = "/images/products/" + fileName;
-                        }
-
-                        await db.SaveChangesAsync();
-                        TempData["message"] = "Produsul a fost actualizat";
-                        TempData["messageType"] = "alert-success";
-                        return RedirectToAction("MyProducts");
-                    }
-                    else
-                    {
-                        TempData["message"] = "Nu dețineți drepturile necesare ca să modificați acest produs";
-                        TempData["messageType"] = "alert-danger";
-                        return RedirectToAction("MyProducts");
-                    }
-                }
-                else
-                {
-                    requestedProduct.Categ = GetAllCategories();
-                    requestedProduct.ImagePath = product.ImagePath;
-                    return View(requestedProduct);
-                }
             }
         }
         public IActionResult Search(string searchString)
@@ -304,7 +247,7 @@ namespace Proiect.Controllers
             var myProducts = await db.Products
                                      .Include(p => p.Category)
                                      .Include(p => p.Proposal)
-                                     .Where(p => p.Proposal.UserId == currentUserId && p.IsActive == true)
+                                     .Where(p => p.Proposal.UserId == currentUserId /*&& p.IsActive == true*/)
                                      .OrderByDescending(p => p.Id)
                                      .ToListAsync();
 

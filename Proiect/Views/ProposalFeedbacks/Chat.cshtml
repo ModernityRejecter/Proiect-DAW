@@ -1,0 +1,127 @@
+﻿@model Proiect.Models.ProductProposal
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Chat - " + Model.Name;
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold mb-1">
+                <i class="bi bi-person-circle text-primary me-2"></i>
+                @(User.IsInRole("Admin") ? (Model.User?.UserName ?? "User") : "Admin")
+            </h4>
+
+            <p class="text-muted mb-0 small">
+                Status: <span class="badge @(Model.Status == "Pending" ? "bg-warning text-dark" : (Model.Status == "Approved" ? "bg-success" : "bg-danger"))">@Model.Status</span>
+
+                <span class="mx-1">|</span>
+
+                <span class="text-secondary fw-bold">
+                    Produs: @Model.Name
+                </span>
+            </p>
+        </div>
+
+        <a asp-controller="ProductProposals" asp-action="MyProposals" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Înapoi
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="height: 75vh; overflow: hidden;">
+
+        <div class="card-body p-0 d-flex flex-column h-100">
+
+            <div id="chatHistory" class="flex-grow-1 overflow-auto p-4 bg-light">
+
+                @if (!Model.Feedbacks.Any())
+                {
+                    <div class="h-100 d-flex flex-column justify-content-center align-items-center text-muted opacity-50">
+                        <i class="bi bi-chat-square-text display-4 mb-3"></i>
+                        <p class="fs-5">Începe conversația aici.</p>
+                    </div>
+                }
+                else
+                {
+                    foreach (var msg in Model.Feedbacks)
+                    {
+                        bool isMe = msg.UserId == currentUserId;
+
+                        <div class="d-flex mb-3 w-100 @(isMe ? "justify-content-end" : "justify-content-start")">
+
+                            <div class="d-flex flex-column @(isMe ? "align-items-end" : "align-items-start")" style="max-width: 75%;">
+
+                                <div class="p-3 rounded-3 shadow-sm text-break
+                                                    @(isMe ? "bg-primary text-white rounded-bottom-start" : "bg-white text-dark border rounded-bottom-end")">
+                                    @msg.Message
+                                </div>
+
+                                <div class="small mt-1 text-muted d-flex align-items-center gap-1">
+                                    @if (!isMe)
+                                    {
+                                        <span class="fw-bold me-1" style="font-size: 0.75rem;">@(msg.User?.UserName ?? "User")</span>
+                                    }
+
+                                    <span style="font-size: 0.7rem;">@msg.Date.ToString("HH:mm")</span>
+
+                                    @if (isMe)
+                                    {
+                                        if (msg.IsRead)
+                                        {
+                                            <i class="bi bi-check-all text-primary" title="Văzut"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-check text-secondary" title="Trimis"></i>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="p-3 bg-white border-top">
+                @if (Model.Status != "Approved")
+                {
+                    <form asp-action="Chat" method="post" class="d-flex gap-2" onsubmit="scrollToBottom()">
+                        <input type="hidden" name="proposalId" value="@Model.Id" />
+
+                        <input type="text" name="message" class="form-control bg-light border-0 py-2 px-3 shadow-none"
+                               placeholder="Scrie un mesaj..." required autocomplete="off" autofocus
+                               style="border-radius: 20px;">
+
+                        <button class="btn btn-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                                type="submit" style="width: 40px; height: 40px;">
+                            <i class="bi bi-send-fill" style="font-size: 0.9rem;"></i>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-success py-2 mb-0 text-center small rounded-pill">
+                        <i class="bi bi-lock-fill me-1"></i> Discuție închisă (Produs Aprobat)
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function scrollToBottom() {
+        var chatBox = document.getElementById('chatHistory');
+        if(chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        scrollToBottom();
+    });
+</script>

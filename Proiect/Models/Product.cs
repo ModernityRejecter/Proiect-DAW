@@ -10,19 +10,20 @@ namespace Proiect.Models
         public int Id { get; set; }
 
         // probabil nu o sa fie nevoie de MULTE din validarile care urmeaza pentru ca o sa preluam datele din ProductProposals unde o sa avem aceleasi validari
-        [Required(ErrorMessage = "Product name field is required")]
-        [StringLength(50, ErrorMessage = "Product name must be at most 50 characters long")]
+        [Required(ErrorMessage = "Numele produsului este un câmp obligatoriu")]
+        [StringLength(100, ErrorMessage = "Lungimea numelui trebuie să fie de maxim 100 caractere")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Product description field is required")]
+        [Required(ErrorMessage = "Descrierea produsului este un câmp obligatoriu")]
+        [StringLength(4000, ErrorMessage = "Lungimea descrierii trebuie să fie de maxim 4000 caractere")]
         public string Description { get; set; }
 
-        [Required(ErrorMessage = "Product price field is required")]
-        [Range(0, double.MaxValue, ErrorMessage = "Product price must be a positive number")]
+        [Required(ErrorMessage = "Prețul produsului este un câmp obligatoriu")]
+        [Range(0, double.MaxValue, ErrorMessage = "Prețul produsului trebuie sa fie un număr real pozitiv")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "Product stock field is required")]
-        [Range(0, double.MaxValue, ErrorMessage = "Product stock must be a positive number")]
+        [Required(ErrorMessage = "Stockul produsului este un câmp obligatoriu")]
+        [Range(0, double.MaxValue, ErrorMessage = "Stockul produsului trebuie sa fie un număr întreg pozitiv")]
         public int Stock { get; set; }
 
         // daca un produs n-are review-uri, rating-ul o sa fie null
@@ -55,5 +56,7 @@ namespace Proiect.Models
 
         [NotMapped]
         public IEnumerable<SelectListItem> Categ { get; set; } = Enumerable.Empty<SelectListItem>();
+
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

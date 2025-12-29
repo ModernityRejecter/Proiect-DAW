@@ -1,6 +1,9 @@
 ﻿@model IEnumerable<Proiect.Models.ProductProposal>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Aprobare Produse";
+    var currentUserId = UserManager.GetUserId(User);
 }
 
 <div class="container mt-4 mb-5">
@@ -88,17 +91,43 @@
                         </div>
 
                         <div class="card-footer bg-white border-top-0 p-3">
-                            <div class="d-flex gap-2 w-100">
-                                <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
-                                    <button type="submit" class="btn btn-success btn-sm w-100" title="Aprobă și Publică">
-                                        <i class="bi bi-check-lg"></i> Aprobă
-                                    </button>
-                                </form>
-                                <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" title="Respinge Propunerea">
-                                        <i class="bi bi-x-lg"></i> Respinge
-                                    </button>
-                                </form>
+                            <div class="d-flex flex-column gap-2 w-100">
+
+                                @{
+                                    int unreadCount = 0;
+                                    if (item.Feedbacks != null)
+                                    {
+                                        unreadCount = item.Feedbacks.Count(f => f.UserId != currentUserId && !f.IsRead);
+                                    }
+                                }
+
+                                <a asp-controller="ProposalFeedbacks" asp-action="Chat" asp-route-id="@item.Id"
+                                   class="btn btn-outline-dark btn-sm position-relative">
+                                    <i class="bi bi-chat-left-text-fill me-2"></i> Chat cu Colaboratorul
+
+                                    @if (unreadCount > 0)
+                                    {
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            @unreadCount
+                                        </span>
+                                    }
+                                </a>
+                                <a asp-controller="ProductProposals" asp-action="Show" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> Detalii
+                                </a>
+
+                                <div class="d-flex gap-2">
+                                    <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                        <button type="submit" class="btn btn-success btn-sm w-100" title="Aprobă și Publică">
+                                            <i class="bi bi-check-lg"></i> Aprobă
+                                        </button>
+                                    </form>
+                                    <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100" title="Respinge Propunerea">
+                                            <i class="bi bi-x-lg"></i> Respinge
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

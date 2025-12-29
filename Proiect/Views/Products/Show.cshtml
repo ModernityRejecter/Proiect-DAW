@@ -2,179 +2,377 @@
 
 @{
     ViewData["Title"] = Model.Name;
-    // Verificăm sigur dacă ViewBag.IsInWishlist este setat, altfel e false
     bool isInWishlist = ViewBag.IsInWishlist == true;
+    double ratingVal = Model.Rating ?? 0;
 }
 
-<div class="container mt-5 mb-5">
+<div class="container py-5">
 
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Acasă</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Products" asp-action="Index" class="text-decoration-none">Produse</a></li>
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted">Acasă</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Products" asp-action="Index" class="text-decoration-none text-muted">Produse</a></li>
             @if (Model.Category != null)
             {
-                <li class="breadcrumb-item"><a asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="text-decoration-none">@Model.Category.Name</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index" asp-route-categoryId="@Model.CategoryId" class="text-decoration-none text-muted">@Model.Category.Name</a></li>
             }
-            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">@Model.Name</li>
         </ol>
     </nav>
 
-    <div class="card shadow border-0">
-        <div class="card-body p-4">
-            <div class="row">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5">
+        <div class="card-body p-0">
+            <div class="row g-0">
 
-                <div class="col-md-6 mb-4 mb-md-0">
-                    <div class="bg-light rounded d-flex align-items-center justify-content-center overflow-hidden border position-relative" style="height: 450px;">
-                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                <div class="col-lg-6 bg-light d-flex align-items-center justify-content-center p-5 position-relative">
+
+                    <div class="position-absolute top-0 start-0 m-4">
+                        @if(Model.IsActive == false)
                         {
-                            <img src="@Model.ImagePath" class="img-fluid p-3" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="@Model.Name">
+                            <span class="badge bg-danger bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
+                                <i class="bi bi-eye-slash-fill me-1"></i> Dezactivat
+                            </span>
                         }
                         else
                         {
-                            <div class="text-muted text-center">
-                                <i class="bi bi-card-image display-1"></i>
-                                <p class="mt-2">Fără imagine disponibilă</p>
-                            </div>
-                        }
-
-                        <div class="position-absolute top-0 start-0 m-3">
-                            @if (Model.Stock > 0)
+                            if (Model.Stock > 0)
                             {
-                                <span class="badge bg-success shadow-sm px-3 py-2">În Stoc</span>
+                                <span class="badge bg-success bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-1"></i> În Stoc
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-danger shadow-sm px-3 py-2">Stoc Epuizat</span>
+                                <span class="badge bg-warning bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Stoc Epuizat
+                                </span>
                             }
-                        </div>
+                        }
                     </div>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="position-absolute top-0 end-0 m-4">
+                            <form asp-controller="Wishlist" asp-action="Toggle" method="post">
+                                <input type="hidden" name="productId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-light rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+                                        style="width: 50px; height: 50px; font-size: 1.5rem; transition: transform 0.2s;"
+                                        title="@(isInWishlist ? "Scoate de la favorite" : "Adaugă la favorite")">
+                                    <i class="bi @(isInWishlist ? "bi-heart-fill text-danger" : "bi-heart text-dark")"></i>
+                                </button>
+                            </form>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.ImagePath))
+                    {
+                        <img src="@Model.ImagePath" class="img-fluid rounded shadow-sm"
+                             style="max-height: 500px; object-fit: contain; transition: transform 0.3s;"
+                             alt="@Model.Name">
+                    }
+                    else
+                    {
+                        <div class="text-muted text-center opacity-50">
+                            <i class="bi bi-image display-1"></i>
+                            <p class="mt-2">Fără imagine</p>
+                        </div>
+                    }
                 </div>
 
-                <div class="col-md-6">
-                    <div class="ps-lg-4">
-                        <div class="mb-2">
-                            <span class="text-muted text-uppercase small fw-bold tracking-wide">
-                                @(Model.Category?.Name ?? "General")
-                            </span>
-                        </div>
+                <div class="col-lg-6 p-5 d-flex flex-column bg-white">
 
-                        <h1 class="fw-bold text-dark mb-2">@Model.Name</h1>
+                    <div class="mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 rounded-pill px-3">
+                            @(Model.Category?.Name ?? "General")
+                        </span>
+                    </div>
 
-                        <div class="mb-3 d-flex align-items-center">
-                            <div class="text-warning me-2">
-                                @{
-                                    double ratingVal = Model.Rating ?? 0;
-                                    int fullStars = (int)ratingVal;
-                                    bool hasHalf = (ratingVal - fullStars) >= 0.5;
-                                }
-                                @for (int i = 0; i < fullStars; i++)
+                    <h1 class="fw-bold text-dark mb-2 display-6">@Model.Name</h1>
+
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="text-warning me-2 fs-5">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= (int)ratingVal)
                                 {
                                     <i class="bi bi-star-fill"></i>
                                 }
-                                @if (hasHalf)
+                                else if (i == (int)ratingVal + 1 && ratingVal % 1 != 0)
                                 {
                                     <i class="bi bi-star-half"></i>
                                 }
-                                @for (int i = (hasHalf ? fullStars + 1 : fullStars); i < 5; i++)
+                                else
                                 {
-                                    <i class="bi bi-star"></i>
+                                    <i class="bi bi-star text-muted opacity-25"></i>
                                 }
-                            </div>
-                            <span class="text-muted small">(@(Model.Rating?.ToString("0.0") ?? "0.0"))</span>
+                            }
                         </div>
+                        <span class="text-muted small fw-medium">
+                            (@(Model.Rating?.ToString("0.0") ?? "0.0") din @Model.Reviews.Count recenzii)
+                        </span>
+                    </div>
 
-                        <h2 class="text-primary fw-bold mb-4">@Model.Price RON</h2>
+                    <h2 class="text-brand fw-bold mb-4 display-5">@Model.Price <small class="fs-4 text-muted">RON</small></h2>
 
-                        <div class="mb-4">
-                            <h5 class="h6 text-dark fw-bold">Descriere produs</h5>
-                            <p class="text-secondary" style="line-height: 1.6;">
-                                @Model.Description
-                            </p>
-                        </div>
+                    <div class="mb-4">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-1">Descriere</h6>
+                        <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">@Model.Description</p>
+                    </div>
 
-                        <hr class="my-4">
+                    <div class="mt-auto">
+                        <hr class="mb-4 opacity-10">
 
-                        <div class="bg-light p-4 rounded border">
-                            @if (Model.Stock > 0)
-                            {
-                                <form asp-controller="Cart" asp-action="AddToCart" method="post">
-                                    <input type="hidden" name="productId" value="@Model.Id" />
+                        @if (Model.Stock > 0)
+                        {
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@Model.Id" />
 
-                                    <div class="row g-3 align-items-end">
-                                        <div class="col-sm-4">
-                                            <label for="quantity" class="form-label fw-bold small">Cantitate</label>
-                                            <div class="input-group">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="decrementValue()">-</button>
-                                                <input type="number" id="quantity" name="quantity" class="form-control text-center border-secondary" value="1" min="1" max="@Model.Stock">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="incrementValue()">+</button>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
-                                                <i class="bi bi-cart-plus me-2"></i> Adaugă în Coș
+                                <div class="row g-3">
+                                    <div class="col-sm-4">
+                                        <div class="input-group input-group-lg border rounded-3 overflow-hidden">
+                                            <button class="btn btn-light border-0" type="button" onclick="decrementValue()">
+                                                <i class="bi bi-dash-lg"></i>
+                                            </button>
+                                            <input type="number" id="quantity" name="quantity" class="form-control text-center border-0 bg-white fw-bold" value="1" min="1" max="@Model.Stock">
+                                            <button class="btn btn-light border-0" type="button" onclick="incrementValue()">
+                                                <i class="bi bi-plus-lg"></i>
                                             </button>
                                         </div>
+                                        <div class="text-center mt-2">
+                                            <small class="text-muted">Stoc: @Model.Stock</small>
+                                        </div>
                                     </div>
-                                    <div class="mt-2 text-muted small">
-                                        <i class="bi bi-box-seam me-1"></i> Disponibile: @Model.Stock bucăți
-                                    </div>
-                                </form>
-                            }
-                            else
-                            {
-                                <div class="alert alert-danger mb-0 d-flex align-items-center">
-                                    <i class="bi bi-exclamation-circle-fill me-2 fs-4"></i>
-                                    <div>
-                                        <strong>Indisponibil momentan.</strong><br>Acest produs nu mai este pe stoc.
+                                    <div class="col-sm-8">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-3 shadow-sm fw-bold">
+                                            <i class="bi bi-cart-plus me-2"></i> Adaugă în Coș
+                                        </button>
                                     </div>
                                 </div>
-                            }
-                        </div>
-
-                        @if (User.Identity.IsAuthenticated)
+                            </form>
+                        }
+                        else
                         {
-                            <div class="mt-3 text-center text-sm-start">
-                                <form asp-controller="Wishlist" asp-action="Toggle" method="post" class="d-inline">
-                                    <input type="hidden" name="productId" value="@Model.Id" />
-
-                                    @if (isInWishlist)
-                                    {
-                                        <button type="submit" class="btn btn-link text-decoration-none text-danger p-0 fw-bold">
-                                            <i class="bi bi-heart-fill me-1"></i> Scoate de la Favorite
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="submit" class="btn btn-link text-decoration-none text-danger p-0">
-                                            <i class="bi bi-heart me-1"></i> Adaugă la Favorite
-                                        </button>
-                                    }
-                                </form>
+                            <div class="alert alert-light border border-warning d-flex align-items-center text-warning rounded-3" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                                <div>
+                                    <strong>Indisponibil momentan.</strong>
+                                    <div class="small">Ne pare rău, acest produs nu mai este pe stoc.</div>
+                                </div>
                             </div>
                         }
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    function incrementValue() {
-        var value = parseInt(document.getElementById('quantity').value, 10);
-        value = isNaN(value) ? 1 : value;
-        var max = parseInt(document.getElementById('quantity').getAttribute('max'), 10);
-        if(value < max){
-            document.getElementById('quantity').value = value + 1;
-        }
-    }
 
-    function decrementValue() {
-        var value = parseInt(document.getElementById('quantity').value, 10);
-        value = isNaN(value) ? 1 : value;
-        if(value > 1){
-            document.getElementById('quantity').value = value - 1;
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h3 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="bi bi-chat-square-quote-fill text-brand me-3"></i> Recenzii Clienți
+            </h3>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="card border-0 shadow-sm mb-5 bg-white rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-3">Împărtășește experiența ta</h5>
+                        <form method="post" asp-controller="Reviews" asp-action="New">
+                            <input type="hidden" name="ProductId" value="@Model.Id" />
+                            <input type="hidden" name="Rating" id="ratingInput" value="0" />
+
+                            <div class="mb-4">
+                                <label class="form-label text-muted fw-bold small text-uppercase">Nota ta</label>
+                                <div class="d-flex align-items-center gap-2" id="starRatingContainer">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi bi-star fs-3 star-icon text-muted" data-value="@i" style="cursor: pointer; transition: color 0.2s;"></i>
+                                    }
+                                    <span id="ratingText" class="ms-2 fw-bold text-brand"></span>
+                                </div>
+                                <div class="text-danger small mt-1" id="ratingError" style="display:none;">Te rog selectează o notă!</div>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input type="text" name="Title" class="form-control bg-light border-0" id="reviewTitle" placeholder="Titlu" maxlength="50"/>
+                                <label for="reviewTitle">Titlu scurt (ex: Produs excelent)</label>
+                            </div>
+
+                            <div class="form-floating mb-4">
+                                <textarea name="Description" class="form-control bg-light border-0" id="reviewDesc" placeholder="Descriere" style="height: 120px" maxlength="400"></textarea>
+                                <label for="reviewDesc">Detaliază experiența ta...</label>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary px-5 rounded-pill fw-bold" onclick="return validateRating()">
+                                    Postează Recenzia <i class="bi bi-send-fill ms-2"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-light border shadow-sm rounded-3 mb-5 d-flex align-items-center p-4">
+                    <div class="bg-white p-3 rounded-circle border me-3">
+                        <i class="bi bi-person-lock fs-3 text-muted"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Vrei să lași o recenzie?</h6>
+                        <p class="mb-0 text-muted small">Trebuie să fii <a asp-area="Identity" asp-page="/Account/Login" class="fw-bold text-decoration-none">autentificat</a> pentru a putea posta o opinie.</p>
+                    </div>
+                </div>
+            }
+
+            @if (!Model.Reviews.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-chat-square-dots text-muted opacity-25" style="font-size: 4rem;"></i>
+                    <p class="text-muted mt-3">Nu există recenzii pentru acest produs. Fii primul care adaugă una!</p>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-4">
+                    @foreach (var review in Model.Reviews.OrderByDescending(r => r.Date))
+                    {
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-brand-soft rounded-circle d-flex align-items-center justify-content-center me-3 text-brand fw-bold" style="width: 45px; height: 45px;">
+                                            @((review.User?.UserName ?? "U").Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">@(review.User?.UserName ?? "Utilizator șters")</h6>
+                                            <small class="text-muted">@review.Date.ToString("dd MMM yyyy")</small>
+                                        </div>
+                                    </div>
+
+                                    @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || review.UserId == ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                                    {
+                                        <div class="dropdown">
+                                            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                                @if (review.UserId == ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                                {
+                                                    <li>
+                                                        <a asp-controller="Reviews" asp-action="Edit" asp-route-id="@review.Id" class="dropdown-item">
+                                                            <i class="bi bi-pencil me-2"></i> Editează
+                                                        </a>
+                                                    </li>
+                                                }
+                                                <li>
+                                                    <form asp-controller="Reviews" asp-action="Delete" asp-route-id="@review.Id" method="post">
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class="bi bi-trash me-2"></i> Șterge
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="mb-2 text-warning">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= review.Rating)
+                                        {
+                                            <i class="bi bi-star-fill"></i>
+                                        }
+                                        else
+                                        {
+
+                                            <i class="bi bi-star text-muted opacity-25"></i>
+                                        }
+                                    }
+                                </div>
+
+                                <h6 class="fw-bold mb-1">@review.Title</h6>
+                                <p class="text-secondary mb-0" style="white-space: pre-line;">@review.Description</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function incrementValue() {
+            var value = parseInt(document.getElementById('quantity').value, 10);
+            value = isNaN(value) ? 1 : value;
+            var max = parseInt(document.getElementById('quantity').getAttribute('max'), 10);
+            if(value < max){
+                document.getElementById('quantity').value = value + 1;
+            }
+        }
+
+        function decrementValue() {
+            var value = parseInt(document.getElementById('quantity').value, 10);
+            value = isNaN(value) ? 1 : value;
+            if(value > 1){
+                document.getElementById('quantity').value = value - 1;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const stars = document.querySelectorAll('.star-icon');
+            const ratingInput = document.getElementById('ratingInput');
+            const ratingText = document.getElementById('ratingText');
+            const labels = ["", "Foarte slab", "Slab", "Mediu", "Bun", "Excelent"];
+            let currentRating = 0;
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', function () {
+                    const hoverValue = this.getAttribute('data-value');
+                    highlightStars(hoverValue);
+                    ratingText.innerText = labels[hoverValue];
+                });
+
+                star.addEventListener('click', function () {
+                    currentRating = this.getAttribute('data-value');
+                    ratingInput.value = currentRating;
+                    highlightStars(currentRating);
+
+                    document.getElementById('ratingError').style.display = 'none';
+                });
+            });
+
+            document.getElementById('starRatingContainer').addEventListener('mouseleave', function () {
+                highlightStars(currentRating);
+                ratingText.innerText = currentRating > 0 ? labels[currentRating] : "";
+            });
+
+            function highlightStars(value) {
+                stars.forEach(s => {
+                    const starVal = s.getAttribute('data-value');
+                    s.classList.remove('bi-star', 'bi-star-fill', 'text-warning', 'text-muted');
+
+                    if (starVal <= value) {
+                        s.classList.add('bi-star-fill', 'text-warning');
+                    } else {
+                        s.classList.add('bi-star', 'text-muted');
+                    }
+                });
+            }
+        });
+
+        function validateRating() {
+            const rating = document.getElementById('ratingInput').value;
+            if (rating == "0" || rating == "") {
+                document.getElementById('ratingError').style.display = 'block';
+                return false;
+            }
+            return true;
         }
     }
 </script>

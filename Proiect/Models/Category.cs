@@ -7,8 +7,8 @@ namespace Proiect.Models
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Category name field is required")]
-        [StringLength(50, ErrorMessage = "Category name string must be at most 50 characters long")]
+        [Required(ErrorMessage = "Numele categoriei este un câmp obligatoriu")]
+        [StringLength(100, ErrorMessage = "Lungimea numelui trebuie să fie de maxim 100 de caractere")]
         public string Name { get; set; } = default!;
     }
 }

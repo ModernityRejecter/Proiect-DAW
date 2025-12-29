@@ -53,7 +53,7 @@ namespace Proiect.Controllers
             {
                 _context.WishlistItems.Remove(item);
                 await _context.SaveChangesAsync();
-                TempData["message"] = "Produsul a fost eliminat din favorite.";
+                TempData["message"] = "Produsul a fost eliminat din favorite";
             }
             return RedirectToAction("Index");
         }
@@ -81,7 +81,7 @@ namespace Proiect.Controllers
             {
                 _context.WishlistItems.Remove(existingItem);
                 await _context.SaveChangesAsync();
-                TempData["message"] = "Produsul a fost eliminat din favorite.";
+                TempData["message"] = "Produsul a fost eliminat din favorite";
                 TempData["messageType"] = "alert-info";
             }
             else
@@ -93,7 +93,7 @@ namespace Proiect.Controllers
                 };
                 _context.WishlistItems.Add(item);
                 await _context.SaveChangesAsync();
-                TempData["message"] = "Produsul a fost salvat la favorite!";
+                TempData["message"] = "Produsul a fost salvat la favorite";
                 TempData["messageType"] = "alert-success";
             }
 

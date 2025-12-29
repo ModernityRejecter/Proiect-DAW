@@ -71,8 +71,8 @@
                     <h3 class="text-primary mb-4">@Model.Price RON</h3>
 
                     <div class="mb-4">
-                        <label class="fw-bold text-muted small">Descriere:</label>
-                        <p class="card-text mt-1">@Model.Description</p>
+                        <label class="fw-bold text-muted small mb-1 d-block">Descriere:</label>
+                        <p class="card-text mb-0" style="white-space: pre-line;">@Model.Description</p>
                     </div>
 
                     <div class="row mb-4">
@@ -85,7 +85,7 @@
                         <div class="col-6">
                             <div class="border rounded p-3 text-center bg-light">
                                 <small class="text-muted d-block text-uppercase">Utilizator</small>
-                                <span class="fw-bold text-truncate d-block">@(Model.User?.UserName ?? "Necunoscut")</span>
+                                <span class="fw-bold fs-5">@(Model.User?.UserName ?? "Necunoscut")</span>
                             </div>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                             </a>
                         }
 
-                        <a asp-action="Index" class="btn btn-light border px-4 py-2 ms-auto">
+                        <a asp-action="MyProposals" class="btn btn-light border px-4 py-2 ms-auto">
                             Înapoi
                         </a>
                     </div>

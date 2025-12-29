@@ -7,23 +7,24 @@ namespace Proiect.Models
         [Key]
         public int Id { get; set; }
 
-        [StringLength(50, ErrorMessage = "Review title must be at most 50 characters long")]
+        [StringLength(100, ErrorMessage = "Lungimea titlului trebuie să fie de maxim 100 caractere")]
         public string? Title { get; set; }
 
-        [StringLength(400, ErrorMessage = "Review description must be at most 400 characters long")]
+        [StringLength(1000, ErrorMessage = "Lungimea descrierii trebuie să fie de maxim 1000 caractere")]
         public string? Description { get; set; }
-        
-        [Range(1, 5, ErrorMessage = "Rating must be a value between 1 and 5")]
+
+        [Required(ErrorMessage = "Este necesar să acordati o notă")]
+        [Range(1, 5, ErrorMessage = "Nota trebuie sa fie între 1 și 5")]
         public int? Rating { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
 
         //-----------------------------------------------------
-        public string UserId { get; set; }
-        public virtual ApplicationUser User { get; set; }
+        public string? UserId { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
         //-----------------------------------------------------
         public int ProductId { get; set; }
-        public virtual Product Product { get; set; }
+        public virtual Product? Product { get; set; }
 
         //-----------------------------------------------------
     }
