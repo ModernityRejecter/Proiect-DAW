@@ -65,12 +65,9 @@ namespace Proiect.Controllers
         {
             proposal.UserId = _userManager.GetUserId(User);
 
-            if (proposal.ImageFile != null)
+            if (proposal.ImageFile != null && !IsValidImageSignature(proposal.ImageFile))
             {
-                if (!IsValidImageSignature(proposal.ImageFile))
-                {
                     ModelState.AddModelError("ImageFile", "Fișierul nu este o imagine validă sau este corupt.");
-                }
             }
 
             if (ModelState.IsValid)
@@ -150,7 +147,7 @@ namespace Proiect.Controllers
             }
             else
             {
-                if (requestedProposal.ImageFile == null)
+                if (requestedProposal.ImageFile is null && !string.IsNullOrEmpty(proposal.ImagePath))
                 {
                     ModelState.Remove("ImageFile");
                 }

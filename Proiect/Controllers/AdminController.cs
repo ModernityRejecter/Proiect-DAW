@@ -156,6 +156,7 @@ namespace Proiect.Controllers
                 product.Stock = proposal.Stock;
                 product.ImagePath = proposal.ImagePath;
                 product.CategoryId = proposal.CategoryId;
+                product.IsActive = true;
                 TempData["message"] = "Produsul a fost actualizat.";
             }
             proposal.Status = "Approved";
