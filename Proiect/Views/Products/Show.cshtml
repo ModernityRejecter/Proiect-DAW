@@ -204,7 +204,7 @@
     </div>
 
     <div class="offcanvas-footer p-3 bg-white border-top">
-        <form asp-controller="Products" asp-action="AskProductAssistant" method="post" id="chatForm" onsubmit="return false;">
+        <form asp-controller="Products" asp-action="AskProductAssistant" method="post" id="chatForm">
             <input type="hidden" name="productId" value="@Model.Id" />
 
             <div class="input-group">
@@ -271,13 +271,19 @@
 </style>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
         var chatForm = document.getElementById("chatForm");
         var chatContainer = document.getElementById("chatContainer");
         var inputField = document.getElementById("userQuestionInput");
         var sendBtn = document.getElementById("sendQuestionBtn");
 
         if (!chatForm) return;
+
+        function scrollToBottom() {
+            requestAnimationFrame(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
 
         function appendMessage(text, isUser) {
             var msgDiv = document.createElement("div");
@@ -290,7 +296,7 @@
             }
 
             chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            scrollToBottom();
         }
 
         function showLoader() {
@@ -299,7 +305,7 @@
             loader.className = "msg-ai typing-dots";
             loader.innerHTML = '<span></span><span></span><span></span>';
             chatContainer.appendChild(loader);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            scrollToBottom();
         }
 
         function removeLoader() {
@@ -309,7 +315,6 @@
 
         chatForm.addEventListener("submit", function(e) {
             e.preventDefault();
-            e.stopPropagation();
 
             var questionText = inputField.value.trim();
             if (!questionText) return;
@@ -318,8 +323,10 @@
 
             appendMessage(questionText, true);
             inputField.value = "";
+
             showLoader();
             sendBtn.disabled = true;
+            inputField.disabled = true;
 
             fetch(chatForm.action, {
                 method: 'POST',
@@ -334,17 +341,20 @@
             .then(data => {
                 removeLoader();
                 sendBtn.disabled = false;
+                inputField.disabled = false;
+                inputField.focus();
 
                 if (data.success) {
                     appendMessage(data.answer, false);
-                } else {
+                }
+                else {
                     appendMessage(data.answer, false);
                 }
             })
             .catch(error => {
                 removeLoader();
                 sendBtn.disabled = false;
-                console.error('Error:', error);
+                inputField.disabled = false;
                 appendMessage("A apărut o eroare de conexiune.", false);
             });
         });
