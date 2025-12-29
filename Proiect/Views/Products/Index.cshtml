@@ -100,9 +100,10 @@
                                 <div class="position-absolute top-0 end-0 m-2">
                                     <form asp-controller="Wishlist" asp-action="Toggle" method="post">
                                         <input type="hidden" name="productId" value="@product.Id" />
-                                        <button type="submit" class="btn btn-sm shadow-sm rounded-circle @(isInWishlist ? "btn-danger" : "btn-light")"
+
+                                        <button type="submit" class="btn btn-light rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center wishlist-btn"
                                                 title="@(isInWishlist ? "Scoate de la favorite" : "Adaugă la favorite")">
-                                            <i class="bi @(isInWishlist ? "bi-heart-fill" : "bi-heart")"></i>
+                                            <i class="bi @(isInWishlist ? "bi-heart-fill text-danger" : "bi-heart text-dark")"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -166,4 +167,21 @@
     .object-fit-cover {
         object-fit: cover;
     }
+
+    /* --- Stiluri Noi pentru butonul de Wishlist --- */
+    .wishlist-btn {
+        width: 45px; /* Dimensiune puțin mai mică decât în Show (45px) pentru a se potrivi pe card */
+        height: 45px;
+        transition: transform 0.2s ease; /* Animația de scalare */
+        font-size: 1.3rem; /* Mărimea inimioarei */
+    }
+
+        .wishlist-btn:hover {
+            transform: scale(1.15); /* Mărește butonul cu 15% la hover */
+        }
+
+            /* Asigurăm că inima roșie rămâne roșie și la hover pe buton */
+            .wishlist-btn:hover i.text-danger {
+                color: #dc3545 !important;
+            }
 </style>

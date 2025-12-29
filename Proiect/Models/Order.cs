@@ -9,8 +9,9 @@ namespace Proiect.Models
 
         public DateTime Date { get; set; } = DateTime.Now;
 
-        [StringLength(50, ErrorMessage = "Item status must be at most 50 characters long")]
-        public string Status { get; set; } = "In progress";
+        //uhhhhhhhhhhhhhhhhhhhhhhhh hmmmmmmmmmmmmmmmmm nu stiu hmmmmmmmmmmmmm poate o sa sterg???
+        [StringLength(50, ErrorMessage = "Statusul produsului este un câmp obligatoriu")]
+        public string Status { get; set; } = "În curs de desfășurare";
 
         //-----------------------------------------
 

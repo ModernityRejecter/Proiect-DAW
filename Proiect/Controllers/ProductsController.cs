@@ -77,9 +77,10 @@ namespace Proiect.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Reviews)
                     .ThenInclude(r => r.User)
+                .Include(p => p.Proposal)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (product == null || !product.IsActive)
+            if (product == null || (product.IsActive == false && product.Proposal?.UserId != _userManager.GetUserId(User) && !User.IsInRole("Admin")))
             {
                 return NotFound();
             }

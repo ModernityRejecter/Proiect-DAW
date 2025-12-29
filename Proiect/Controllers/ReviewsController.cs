@@ -91,7 +91,7 @@ namespace Proiect.Controllers
             {
                 db.Reviews.Remove(review);
                 db.SaveChanges();
-                TempData["message"] = "Recenzia a fost actualizată";
+                TempData["message"] = "Recenzia a fost ștearsă";
                 TempData["messageType"] = "alert-success";
                 return Redirect("/Products/Show/" + review.ProductId);
             }

@@ -27,17 +27,26 @@
                 <div class="col-lg-6 bg-light d-flex align-items-center justify-content-center p-5 position-relative">
 
                     <div class="position-absolute top-0 start-0 m-4">
-                        @if (Model.Stock > 0)
+                        @if(Model.IsActive == false)
                         {
-                            <span class="badge bg-success bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
-                                <i class="bi bi-check-circle-fill me-1"></i> În Stoc
+                            <span class="badge bg-danger bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
+                                <i class="bi bi-eye-slash-fill me-1"></i> Dezactivat
                             </span>
                         }
                         else
                         {
-                            <span class="badge bg-danger bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
-                                <i class="bi bi-x-circle-fill me-1"></i> Stoc Epuizat
-                            </span>
+                            if (Model.Stock > 0)
+                            {
+                                <span class="badge bg-success bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-1"></i> În Stoc
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning bg-opacity-75 text-white rounded-pill px-3 py-2 shadow-sm">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Stoc Epuizat
+                                </span>
+                            }
                         }
                     </div>
 
@@ -47,7 +56,7 @@
                             <form asp-controller="Wishlist" asp-action="Toggle" method="post">
                                 <input type="hidden" name="productId" value="@Model.Id" />
                                 <button type="submit" class="btn btn-light rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
-                                        style="width: 45px; height: 45px; transition: transform 0.2s;"
+                                        style="width: 50px; height: 50px; font-size: 1.5rem; transition: transform 0.2s;"
                                         title="@(isInWishlist ? "Scoate de la favorite" : "Adaugă la favorite")">
                                     <i class="bi @(isInWishlist ? "bi-heart-fill text-danger" : "bi-heart text-dark")"></i>
                                 </button>
@@ -105,11 +114,12 @@
 
                     <h2 class="text-brand fw-bold mb-4 display-5">@Model.Price <small class="fs-4 text-muted">RON</small></h2>
 
-                    <div class="mb-5">
-                        <h6 class="text-uppercase text-muted fw-bold small mb-2">Descriere</h6>
-                        <p class="text-secondary lh-lg">
+                    <div class="mb-4">
+                        <label class="fw-bold text-muted small">Descriere:</label>
+
+                        <div class="card-text mt-1 text-secondary lh-lg" style="white-space: pre-line;">
                             @Model.Description
-                        </p>
+                        </div>
                     </div>
 
                     <div class="mt-auto">
@@ -145,7 +155,7 @@
                         }
                         else
                         {
-                            <div class="alert alert-light border border-danger d-flex align-items-center text-danger rounded-3" role="alert">
+                            <div class="alert alert-light border border-warning d-flex align-items-center text-warning rounded-3" role="alert">
                                 <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
                                 <div>
                                     <strong>Indisponibil momentan.</strong>
@@ -187,12 +197,12 @@
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="text" name="Title" class="form-control bg-light border-0" id="reviewTitle" placeholder="Titlu" maxlength="50" required />
+                                <input type="text" name="Title" class="form-control bg-light border-0" id="reviewTitle" placeholder="Titlu" maxlength="50"/>
                                 <label for="reviewTitle">Titlu scurt (ex: Produs excelent)</label>
                             </div>
 
                             <div class="form-floating mb-4">
-                                <textarea name="Description" class="form-control bg-light border-0" id="reviewDesc" placeholder="Descriere" style="height: 120px" maxlength="400" required></textarea>
+                                <textarea name="Description" class="form-control bg-light border-0" id="reviewDesc" placeholder="Descriere" style="height: 120px" maxlength="400"></textarea>
                                 <label for="reviewDesc">Detaliază experiența ta...</label>
                             </div>
 
@@ -260,7 +270,7 @@
                                                 }
                                                 <li>
                                                     <form asp-controller="Reviews" asp-action="Delete" asp-route-id="@review.Id" method="post">
-                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Sigur ștergi recenzia?');">
+                                                        <button type="submit" class="dropdown-item text-danger">
                                                             <i class="bi bi-trash me-2"></i> Șterge
                                                         </button>
                                                     </form>

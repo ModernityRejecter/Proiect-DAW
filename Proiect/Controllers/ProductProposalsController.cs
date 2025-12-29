@@ -97,7 +97,7 @@ namespace Proiect.Controllers
                     db.ProductProposals.Add(proposal);
                     await db.SaveChangesAsync();
 
-                    TempData["message"] = "Produsul a fost propus cu succes!";
+                    TempData["message"] = "Propunerea a fost adaugată";
                     TempData["messageType"] = "alert-success";
                     return RedirectToAction("MyProposals");
                 }
