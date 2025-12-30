@@ -162,7 +162,7 @@ namespace Proiect.Controllers
             proposal.Status = "Approved";
 
             await _context.SaveChangesAsync();
-            return RedirectToAction("ManageProposals");
+            return Redirect(Request.Headers.Referer.ToString());
         }
 
         [HttpPost]
@@ -175,7 +175,7 @@ namespace Proiect.Controllers
                 await _context.SaveChangesAsync();
                 TempData["message"] = "Propunerea a fost respinsă.";
             }
-            return RedirectToAction("ManageProposals");
+            return Redirect(Request.Headers.Referer.ToString());
         }
 
         [HttpGet]

@@ -93,13 +93,13 @@ namespace Proiect.Controllers
                 db.SaveChanges();
                 TempData["message"] = "Recenzia a fost ștearsă";
                 TempData["messageType"] = "alert-success";
-                return Redirect("/Products/Show/" + review.ProductId);
+                return Redirect(Request.Headers.Referer.ToString());
             }
             else
             {
                 TempData["message"] = "Nu aveți dreptul să ștergeți recenzia altui utilizator";
                 TempData["messageType"] = "alert-danger";
-                return Redirect("/Products/Show/" + review.ProductId);
+                return Redirect(Request.Headers.Referer.ToString());
             }
         }
 
