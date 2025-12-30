@@ -3,43 +3,102 @@
     ViewData["Title"] = "Moderare Recenzii";
 }
 
-<div class="container mt-4">
-    <h2>Moderare Recenzii</h2>
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Data</th>
-                <th>Produs</th>
-                <th>Utilizator</th>
-                <th>Rating</th>
-                <th>Comentariu</th>
-                <th>Acțiuni</th>
-            </tr>
-        </thead>
-        <tbody>
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-brand mb-0">Moderare Recenzii</h2>
+        <span class="badge bg-light text-dark border px-3 py-2">Total: @Model.Count()</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-chat-square-text fs-1 text-muted"></i>
+            </div>
+            <h4 class="text-muted">Nu există recenzii de moderat.</h4>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
             @foreach (var review in Model)
             {
-                <tr>
-                    <td>@review.Date.ToString("dd/MM/yyyy")</td>
-                    <td>@review.Product?.Name</td>
-                    <td>@review.User?.Email</td>
-                    <td>@review.Rating <i class="bi bi-star-fill text-warning"></i></td>
-                    <td>
-                        <div class="fw-bold">@review.Title</div>
-                        <span style="white-space: pre-line;">@review.Description</span>
-                    </td>
-                    <td>
-                        <form asp-action="DeleteReview" asp-route-id="@review.Id" method="post" onsubmit="return confirm('Ștergi recenzia?');">
-                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 hover-effect">
+                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-brand-soft rounded-circle d-flex align-items-center justify-content-center me-2 text-brand fw-bold" style="width: 40px; height: 40px;">
+                                    @((review.User?.UserName ?? "U").Substring(0, 1).ToUpper())
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">@(review.User?.Email ?? "Utilizator șters")</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        <i class="bi bi-calendar3 me-1"></i> @review.Date.ToString("dd MMM yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-secondary border">
+                                    <i class="bi bi-box-seam me-1"></i> @(review.Product?.Name ?? "Produs șters")
+                                </span>
+                            </div>
+
+                            <div class="mb-2 text-warning">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= review.Rating)
+                                    {
+                                        <i class="bi bi-star-fill"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-muted opacity-25"></i>
+                                    }
+                                }
+                            </div>
+
+                            <h6 class="fw-bold mb-1">@review.Title</h6>
+                            <p class="text-secondary small mb-0" style="white-space: pre-line;">@review.Description</p>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                            <form asp-action="DeleteReview" asp-route-id="@review.Id" method="post" onsubmit="return confirm('Sigur vrei să ștergi această recenzie?');">
+                                <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+                                    <i class="bi bi-trash me-1"></i> Șterge Recenzia
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    }
+
     <div class="mt-4">
         <a href="javascript:history.back()" class="btn btn-secondary">
             <i class="bi bi-arrow-left me-1"></i> Înapoi
         </a>
     </div>
 </div>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+    .bg-brand-soft {
+        background-color: rgba(79, 70, 229, 0.12);
+    }
+
+    .text-brand {
+        color: #4f46e5;
+    }
+</style>
