@@ -62,14 +62,14 @@ namespace Proiect.Controllers
             {
                 TempData["message"] = "Produsul nu este disponibil.";
                 TempData["messageType"] = "alert-danger";
-                return Redirect(Request.Headers["Referer"].ToString());
+                return Redirect(Request.Headers.Referer.ToString());
             }
 
             if (product.Stock < quantity)
             {
                 TempData["message"] = "Produsul nu este disponibil în cantitatea selectată.";
                 TempData["messageType"] = "alert-danger";
-                return Redirect(Request.Headers["Referer"].ToString());
+                return Redirect(Request.Headers.Referer.ToString());
             }
             
 
@@ -117,7 +117,7 @@ namespace Proiect.Controllers
             TempData["message"] = "Produsul a fost adăugat în coș!";
             TempData["messageType"] = "alert-success";
 
-            return Redirect(Request.Headers["Referer"].ToString());
+            return Redirect(Request.Headers.Referer.ToString());
         }
 
         [HttpPost]

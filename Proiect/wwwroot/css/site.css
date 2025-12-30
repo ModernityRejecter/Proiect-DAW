@@ -108,21 +108,6 @@ a {
         border-color: #4f46e5 !important;
     }
 
-.btn-danger {
-    background-color: transparent !important;
-    border: 2px solid #ef4444 !important;
-    color: #ef4444 !important;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-    .btn-danger:hover {
-        background-color: #ef4444 !important;
-        color: white !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
-
 form + .btn-danger,
 form + p > .btn-danger,
 .btn-primary + .btn-danger {

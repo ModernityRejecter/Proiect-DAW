@@ -125,7 +125,7 @@ namespace Proiect.Controllers
                 TempData["messageType"] = "alert-danger";
             }
 
-            return RedirectToAction("MyProducts");
+            return Redirect(Request.Headers.Referer.ToString());
         }
 
         [HttpGet]

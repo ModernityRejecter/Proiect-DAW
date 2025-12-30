@@ -109,6 +109,13 @@ namespace Proiect.Controllers
             }
             else
             {
+                var hasProducts = db.Products.Any(p => p.CategoryId == category.Id);
+                if (hasProducts)
+                {
+                    TempData["message"] = "Categoria nu poate fi stearsa deoarece are produse asociate.";
+                    TempData["messageType"] = "alert-danger";
+                    return RedirectToAction("Index");
+                }
                 db.Categories.Remove(category);
                 TempData["message"] = "Categoria a fost stearsa";
                 db.SaveChanges();

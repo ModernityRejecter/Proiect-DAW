@@ -97,7 +97,7 @@ namespace Proiect.Controllers
                 TempData["messageType"] = "alert-success";
             }
 
-            return Redirect(Request.Headers["Referer"].ToString());
+            return Redirect(Request.Headers.Referer.ToString());
         }
     }
 }

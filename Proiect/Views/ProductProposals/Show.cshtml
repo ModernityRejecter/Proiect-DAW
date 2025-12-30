@@ -98,7 +98,7 @@
                         @if (User.IsInRole("Admin") && Model.Status == "Pending")
                         {
                             <form asp-controller="Admin" asp-action="ApproveProposal" asp-route-id="@Model.Id" method="post" class="flex-grow-1">
-                                <button type="submit" class="btn btn-success w-100 py-2">
+                                <button type="submit" class="btn btn-outline-success w-100 py-2">
                                     <i class="bi bi-check-lg me-1"></i> Aprobă Produsul
                                 </button>
                             </form>
@@ -112,13 +112,13 @@
 
                         @if (Model.Status == "Pending" || User.IsInRole("Admin"))
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary px-4 py-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary px-4 py-2">
                                 <i class="bi bi-pencil-square me-1"></i> Editează
                             </a>
                         }
 
-                        <a asp-action="MyProposals" class="btn btn-light border px-4 py-2 ms-auto">
-                            Înapoi
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Înapoi
                         </a>
                     </div>
 
