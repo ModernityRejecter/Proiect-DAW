@@ -17,21 +17,21 @@ namespace Proiect.Controllers
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _env = env;
 
-        [Authorize(Roles = "Admin")]
-        public IActionResult Index()
-        {
-            var proposals = db.ProductProposals
-                                .Include(p => p.Category)
-                                .Include(p => p.User);
+        //[Authorize(Roles = "Admin")]
+        //public IActionResult Index()
+        //{
+        //    var proposals = db.ProductProposals
+        //                        .Include(p => p.Category)
+        //                        .Include(p => p.User);
 
-            ViewBag.Proposals = proposals;
-            if (TempData.ContainsKey("message"))
-            {
-                ViewBag.Message = TempData["message"];
-                ViewBag.MessageType = TempData["messageType"];
-            }
-            return View();
-        }
+        //    ViewBag.Proposals = proposals;
+        //    if (TempData.ContainsKey("message"))
+        //    {
+        //        ViewBag.Message = TempData["message"];
+        //        ViewBag.MessageType = TempData["messageType"];
+        //    }
+        //    return View();
+        //}
 
         [Authorize(Roles = "Colaborator,Admin")]
         public async Task<IActionResult> MyProposals()
@@ -94,11 +94,40 @@ namespace Proiect.Controllers
                         proposal.ImagePath = "/images/products/" + fileName;
                     }
 
+                    if (User.IsInRole("Admin"))
+                    {
+                        proposal.Status = "Approved";
+                        db.ProductProposals.Add(proposal);
+                        await db.SaveChangesAsync();
+
+                        var product = new Product
+                        {
+                            Name = proposal.Name,
+                            Description = proposal.Description,
+                            Price = proposal.Price,
+                            Stock = proposal.Stock,
+                            ImagePath = proposal.ImagePath,
+                            CategoryId = proposal.CategoryId,
+                            ProposalId = proposal.Id,
+                            Rating = 0,
+                            IsActive = true
+                        };
+
+                        db.Products.Add(product);
+                        await db.SaveChangesAsync();
+
+                        TempData["message"] = "Propunerea a fost adaugată și aprobată";
+                        TempData["messageType"] = "alert-success";
+
+                        return RedirectToAction("MyProposals");
+                    }
+
                     db.ProductProposals.Add(proposal);
                     await db.SaveChangesAsync();
 
                     TempData["message"] = "Propunerea a fost adaugată";
                     TempData["messageType"] = "alert-success";
+
                     return RedirectToAction("MyProposals");
                 }
                 catch (Exception ex)
@@ -132,7 +161,7 @@ namespace Proiect.Controllers
             {
                 TempData["message"] = "Nu dețineți drepturile necesare ca să modificați propunerea altui utilizator";
                 TempData["messageType"] = "alert-danger";
-                return RedirectToAction("MyProposals");
+                return Redirect(Request.Headers.Referer.ToString());
             }
         }
 
@@ -161,7 +190,6 @@ namespace Proiect.Controllers
                         proposal.Name = requestedProposal.Name;
                         proposal.Description = requestedProposal.Description;
                         proposal.CategoryId = requestedProposal.CategoryId;
-                        proposal.Status = "Pending";
 
                         if (requestedProposal.ImageFile != null && requestedProposal.ImageFile.Length > 0)
                         {
@@ -193,8 +221,51 @@ namespace Proiect.Controllers
                             proposal.ImagePath = "/images/products/" + fileName;
                         }
 
+                        if (User.IsInRole("Admin"))
+                        {
+                            proposal.Status = "Approved";
+
+                            var linkedProduct = await db.Products.FirstOrDefaultAsync(p => p.ProposalId == proposal.Id);
+
+                            if (linkedProduct != null)
+                            {
+                                linkedProduct.Name = proposal.Name;
+                                linkedProduct.Description = proposal.Description;
+                                linkedProduct.Price = proposal.Price;
+                                linkedProduct.Stock = proposal.Stock;
+                                linkedProduct.CategoryId = proposal.CategoryId;
+                                linkedProduct.ImagePath = proposal.ImagePath;
+                                linkedProduct.IsActive = true;
+                            }
+                            else
+                            {
+                                var newProduct = new Product
+                                {
+                                    Name = proposal.Name,
+                                    Description = proposal.Description,
+                                    Price = proposal.Price,
+                                    Stock = proposal.Stock,
+                                    ImagePath = proposal.ImagePath,
+                                    CategoryId = proposal.CategoryId,
+                                    ProposalId = proposal.Id,
+                                    Rating = 0,
+                                    IsActive = true
+                                };
+                                db.Products.Add(newProduct);
+                            }
+                        }
+                        else
+                        {
+                            proposal.Status = "Pending";
+                        }
+                        // ---------------------------------------------
+
                         await db.SaveChangesAsync();
-                        TempData["message"] = "Propunerea a fost actualizată";
+
+                        TempData["message"] = User.IsInRole("Admin")
+                            ? "Produsul a fost actualizat"
+                            : "Propunerea a fost actualizată și trimisă spre aprobare.";
+
                         TempData["messageType"] = "alert-success";
                         return RedirectToAction("MyProposals");
                     }
@@ -202,7 +273,7 @@ namespace Proiect.Controllers
                     {
                         TempData["message"] = "Nu dețineți drepturile necesare ca să modificați propunerea altui utilizator";
                         TempData["messageType"] = "alert-danger";
-                        return RedirectToAction("MyProposals");
+                        return Redirect(Request.Headers.Referer.ToString());
                     }
                 }
                 else 
@@ -245,7 +316,7 @@ namespace Proiect.Controllers
                 TempData["message"] = "Nu dețineți drepturile necesare ca să ștergeți propunerea altui utilizator";
                 TempData["messageType"] = "alert-danger";
             }
-            return RedirectToAction("MyProposals");
+            return Redirect(Request.Headers.Referer.ToString());
         }
 
         [Authorize(Roles = "Admin,Colaborator")]
@@ -268,7 +339,7 @@ namespace Proiect.Controllers
             {
                 TempData["message"] = "Nu dețineți drepturile necesare ca să ștergeți propunerea altui utilizator";
                 TempData["messageType"] = "alert-danger";
-                return RedirectToAction("MyProposals");
+                return Redirect(Request.Headers.Referer.ToString());
             }
         }
 

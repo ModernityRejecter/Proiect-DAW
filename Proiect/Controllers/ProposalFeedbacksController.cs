@@ -52,7 +52,7 @@ namespace Proiect.Controllers
                 {
                     text.IsRead = true;
                 }
-                db.SaveChangesAsync();
+                _ = db.SaveChangesAsync();
             }
             proposal.Feedbacks = proposal.Feedbacks.
                 OrderBy(f => f.Date).

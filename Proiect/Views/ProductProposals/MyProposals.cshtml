@@ -109,7 +109,7 @@
                                     }
                                 }
 
-                                <a asp-controller="ProposalFeedbacks" asp-action="Chat" asp-route-id="@proposal.Id" class="btn btn-outline-primary btn-sm position-relative">
+                                <a asp-controller="ProposalFeedbacks" asp-action="Chat" asp-route-id="@proposal.Id" class="btn btn-primary btn-sm position-relative">
                                     <i class="bi bi-chat-text me-1"></i> Chat cu Adminul
 
                                     @if (unreadCount > 0)
@@ -120,7 +120,7 @@
                                         </span>
                                     }
                                 </a>
-                                <a asp-action="Show" asp-route-id="@proposal.Id" class="btn btn-outline-secondary btn-sm">
+                                <a asp-action="Show" asp-route-id="@proposal.Id" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-eye me-1"></i> Detalii
                                 </a>
 
@@ -152,8 +152,8 @@
         </div>
     }
     <div class="mt-4">
-        <a asp-controller="Collaborator" asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Înapoi la Dashboard
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi
         </a>
     </div>
 </div>

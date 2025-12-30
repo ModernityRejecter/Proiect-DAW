@@ -31,7 +31,7 @@
 
                             <div class="d-flex gap-2">
                                 <a asp-action="Edit" asp-route-id="@category.Id"
-                                   class="btn btn-outline-primary w-50" title="Editează">
+                                   class="btn btn-outline-secondary w-50" title="Editează">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
 
@@ -50,6 +50,8 @@
         }
     </div>
     <div class="mt-4">
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Înapoi</a>
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi
+        </a>
     </div>
 </div>

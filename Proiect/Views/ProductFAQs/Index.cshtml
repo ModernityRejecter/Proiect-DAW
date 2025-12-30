@@ -8,18 +8,6 @@
         <h2 class="fw-bold text-brand">
             <i class="bi bi-question-circle me-2"></i> Întrebări fără răspuns
         </h2>
-        @if (User.IsInRole("Admin"))
-        {
-            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Dashboard Admin
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Collaborator" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Dashboard Colaborator
-            </a>
-        }
     </div>
 
     @if (!Model.Any())
@@ -88,6 +76,11 @@
             }
         </div>
     }
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi
+        </a>
+    </div>
 </div>
 
 <style>

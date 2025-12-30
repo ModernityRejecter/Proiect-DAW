@@ -10,11 +10,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-brand mb-1">Propuneri în Așteptare</h2>
-            <p class="text-muted mb-0">Gestionează produsele propuse de colaboratori</p>
         </div>
-        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Înapoi la Dashboard
-        </a>
     </div>
 
 
@@ -102,8 +98,8 @@
                                 }
 
                                 <a asp-controller="ProposalFeedbacks" asp-action="Chat" asp-route-id="@item.Id"
-                                   class="btn btn-outline-dark btn-sm position-relative">
-                                    <i class="bi bi-chat-left-text-fill me-2"></i> Chat cu Colaboratorul
+                                   class="btn btn-primary btn-sm position-relative">
+                                    <i class="bi bi-chat-left-text me-2"></i> Chat cu Colaboratorul
 
                                     @if (unreadCount > 0)
                                     {
@@ -118,7 +114,7 @@
 
                                 <div class="d-flex gap-2">
                                     <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
-                                        <button type="submit" class="btn btn-success btn-sm w-100" title="Aprobă și Publică">
+                                        <button type="submit" class="btn btn-outline-success btn-sm w-100" title="Aprobă și Publică">
                                             <i class="bi bi-check-lg"></i> Aprobă
                                         </button>
                                     </form>
@@ -135,6 +131,11 @@
             }
         </div>
     }
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi
+        </a>
+    </div>
 </div>
 
 <style>

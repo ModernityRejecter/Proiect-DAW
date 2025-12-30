@@ -16,9 +16,6 @@
             </div>
             <h4 class="text-muted">Nu ai produse salvate</h4>
             <p class="text-muted mb-4">Salvează produsele favorite pentru a le găsi mai ușor.</p>
-            <a asp-controller="Products" asp-action="Index" class="btn btn-primary px-4">
-                Vezi Produse
-            </a>
         </div>
     }
     else
@@ -111,8 +108,8 @@
     }
 
     <div class="mt-4">
-        <a asp-controller="Products" asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Înapoi la Magazin
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Înapoi
         </a>
     </div>
 </div>

@@ -113,6 +113,7 @@ namespace Proiect.Controllers
                 if (hasProducts)
                 {
                     TempData["message"] = "Categoria nu poate fi stearsa deoarece are produse asociate.";
+                    TempData["messageType"] = "alert-danger";
                     return RedirectToAction("Index");
                 }
                 db.Categories.Remove(category);
