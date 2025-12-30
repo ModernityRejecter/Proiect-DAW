@@ -74,7 +74,7 @@
                         </div>
 
                         <div class="form-floating mb-4">
-                            <textarea asp-for="Description" class="form-control" placeholder="Descriere" style="height: 120px"></textarea>
+                            <textarea asp-for="Description" class="form-control" placeholder="Descriere"></textarea>
                             <label asp-for="Description">Descriere produs</label>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
@@ -100,3 +100,18 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tx = document.getElementById('Description');
+        const setHeight = (input) => {
+            input.style.height = 'auto';
+            input.style.height = (input.scrollHeight) + 'px';
+        }
+        if (tx) {
+            tx.style.overflowY = 'hidden';
+            tx.style.minHeight = '120px';
+            setHeight(tx);
+            tx.addEventListener('input', () => setHeight(tx));
+        }
+    });
+</script>
