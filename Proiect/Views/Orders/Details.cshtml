@@ -114,10 +114,18 @@
                         <span class="fs-5 fw-bold text-dark">Total</span>
                         <span class="fs-4 fw-bold text-brand">@grandTotal.ToString("0.00") RON</span>
                     </div>
+                    <div class="d-grid gap-2">
+                        @if (Model.Status == "Inregistrata")
+                        {
+                            <form asp-action="CancelOrder" asp-route-id="@Model.Id" method="post">
+                                <button type="submit" class="btn btn-outline-danger w-100 py-2" onclick="return confirm('Ești sigur că vrei să anulezi comanda?');">
+                                    <i class="bi bi-x-circle me-2"></i> Anulează Comanda
+                                </button>
+                            </form>
+                        }
 
-                    <div class="d-grid">
-                        <a asp-action="Index" class="btn btn-outline-secondary py-2">
-                            <i class="bi bi-arrow-left me-2"></i> Înapoi la Istoric
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary py-2">
+                            <i class="bi bi-arrow-left me-2"></i> Înapoi
                         </a>
                     </div>
                 </div>

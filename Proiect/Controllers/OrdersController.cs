@@ -124,5 +124,44 @@ namespace Proiect.Controllers
 
             return RedirectToAction("Details", new { id = order.Id });
         }
+        [HttpPost]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var order = await _context.Orders
+                                      .Include(o => o.Items)
+                                      .ThenInclude(i => i.Product)
+                                      .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null) return NotFound();
+
+            if (order.UserId != user.Id) return Forbid();
+
+            if (order.Status == "Inregistrata")
+            {
+                order.Status = "Anulat";
+
+                foreach (var item in order.Items)
+                {
+                    if (item.Product != null)
+                    {
+                        item.Product.Stock += item.Quantity;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["message"] = "Comanda a fost anulată cu succes.";
+                TempData["messageType"] = "alert-success";
+            }
+            else
+            {
+                TempData["message"] = "Comanda nu mai poate fi anulată deoarece a fost deja procesată.";
+                TempData["messageType"] = "alert-danger";
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }

@@ -27,6 +27,7 @@
                 decimal total = order.Items.Sum(i => i.Quantity * i.Price);
                 var previewItems = order.Items.Take(4).ToList();
                 int remainingCount = order.Items.Count - 4;
+                bool canCancel = (order.Status == "Inregistrata");
 
                 <div class="col-md-6 col-lg-6 col-xl-4">
                     <div class="card shadow-sm border-0 h-100 hover-effect">
@@ -94,9 +95,19 @@
                         </div>
 
                         <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                            <div class="d-grid gap-2">
                             <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-primary w-100 btn-sm">
                                 Vezi Detalii Complete
                             </a>
+                            @if (canCancel)
+                            {
+                                <form asp-action="CancelOrder" asp-route-id="@order.Id" method="post">
+                                    <button type="submit" class="btn btn-outline-danger w-100 btn-sm" onclick="return confirm('Ești sigur că vrei să anulezi comanda?');">
+                                        <i class="bi bi-x-circle me-1"></i> Anulează Comanda
+                                    </button>
+                                </form>
+                            }
+                            </div>
                         </div>
                     </div>
                 </div>

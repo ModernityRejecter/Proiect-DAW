@@ -197,5 +197,54 @@ namespace Proiect.Controllers
 
             return View(result);
         }
+        public async Task<IActionResult> ManageOrders()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .OrderByDescending(o => o.Date)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderStatus(int id, string newStatus)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order != null)
+            {
+                order.Status = newStatus;
+                await _context.SaveChangesAsync();
+                TempData["message"] = $"Comanda #{id} a fost actualizată la statusul: {newStatus}";
+                TempData["messageType"] = "alert-success";
+            }
+            return RedirectToAction("ManageOrders");
+        }
+        public async Task<IActionResult> ManageProducts()
+        {
+            var products = await _context.Products
+                                         .Include(p => p.Category)
+                                         .Include(p => p.Proposal)
+                                         .ThenInclude(pr => pr.User)
+                                         .OrderByDescending(p => p.Id)
+                                         .ToListAsync();
+            return View(products);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleProductStatus(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product != null)
+            {
+                product.IsActive = !product.IsActive;
+                await _context.SaveChangesAsync();
+                TempData["message"] = $"Produsul {product.Name} este acum {(product.IsActive ? "Activ" : "Inactiv")}.";
+                TempData["messageType"] = "alert-info";
+            }
+            return RedirectToAction("ManageProducts");
+        }
     }
 }
