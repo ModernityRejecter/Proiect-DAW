@@ -7,7 +7,7 @@ using Proiect.Models;
 
 namespace Proiect.Controllers
 {
-    public class ReviewsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
+    public class ReviewsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager) : Controller
     {
         private readonly ApplicationDbContext db = context;
@@ -53,6 +53,11 @@ namespace Proiect.Controllers
             {
                 if(review.UserId == _userManager.GetUserId(User))
                 {
+                    if (string.IsNullOrWhiteSpace(editedReview.Title) && editedReview.Rating.HasValue)
+                    {
+                        editedReview.Title = GetLabelByRating(editedReview.Rating.Value);
+                    }
+
                     if (ModelState.IsValid)
                     {
                         review.Title = editedReview.Title;
@@ -110,6 +115,11 @@ namespace Proiect.Controllers
             review.Date = DateTime.Now;
             review.UserId = _userManager.GetUserId(User);
 
+            if (string.IsNullOrWhiteSpace(review.Title) && review.Rating.HasValue)
+            {
+                review.Title = GetLabelByRating(review.Rating.Value);
+            }
+
             if (ModelState.IsValid)
             {
                 db.Reviews.Add(review);
@@ -136,6 +146,19 @@ namespace Proiect.Controllers
                 TempData["messageType"] = "alert-danger";
                 return Redirect("/Products/Show/" + review.ProductId);
             }
+        }
+
+        private string GetLabelByRating(int rating)
+        {
+            return rating switch
+            {
+                1 => "Foarte slab",
+                2 => "Slab",
+                3 => "Mediu",
+                4 => "Bun",
+                5 => "Excelent",
+                _ => "Recenzie"
+            };
         }
     }
 }

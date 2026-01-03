@@ -108,16 +108,11 @@
                             }
                         </div>
                         <span class="text-muted small fw-medium">
-                            (@(Model.Rating?.ToString("0.0") ?? "0.0") din @Model.Reviews.Count recenzii)
+                            (@(Model.Rating?.ToString("0.0") ?? "0.0") din @ViewBag.TotalReviews recenzii)
                         </span>
                     </div>
 
                     <h2 class="text-brand fw-bold mb-4 display-5">@Model.Price <small class="fs-4 text-muted">RON</small></h2>
-
-                    <div class="mb-4">
-                        <h6 class="text-uppercase text-muted fw-bold small mb-1">Descriere</h6>
-                        <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">@Model.Description</p>
-                    </div>
 
                     <div class="mt-auto">
                         <hr class="mb-4 opacity-10">
@@ -165,7 +160,20 @@
             </div>
         </div>
     </div>
-
+    <div class="accordion shadow-sm rounded-4 overflow-hidden mb-5" id="productDescriptionAccordion">
+        <div class="accordion-item border-0">
+            <h2 class="accordion-header" id="headingDescription">
+                <button class="accordion-button fw-bold bg-white text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDescription" aria-expanded="true" aria-controls="collapseDescription">
+                    <i class="bi bi-file-text me-2 text-brand"></i> Descriere Detaliată Produs
+                </button>
+            </h2>
+            <div id="collapseDescription" class="accordion-collapse collapse show" aria-labelledby="headingDescription" data-bs-parent="#productDescriptionAccordion">
+                <div class="accordion-body text-secondary lh-lg p-4 bg-light bg-opacity-25" style="white-space: pre-line;">
+                    @Model.Description
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-lg-8 mx-auto">
             <h3 class="fw-bold mb-4 d-flex align-items-center">
@@ -225,7 +233,7 @@
                 </div>
             }
 
-            @if (!Model.Reviews.Any())
+            @if (ViewBag.TotalReviews == 0)
             {
                 <div class="text-center py-5">
                     <i class="bi bi-chat-square-dots text-muted opacity-25" style="font-size: 4rem;"></i>
@@ -235,7 +243,7 @@
             else
             {
                 <div class="d-flex flex-column gap-4">
-                    @foreach (var review in Model.Reviews.OrderByDescending(r => r.Date))
+                    @foreach (var review in ViewBag.ReviewsList)
                     {
                         <div class="card border-0 shadow-sm rounded-4 h-100">
                             <div class="card-body p-4">
@@ -286,7 +294,6 @@
                                         }
                                         else
                                         {
-
                                             <i class="bi bi-star text-muted opacity-25"></i>
                                         }
                                     }
@@ -298,6 +305,8 @@
                         </div>
                     }
                 </div>
+
+                <partial name="_Pagination" />
             }
         </div>
     </div>

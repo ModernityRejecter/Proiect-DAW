@@ -19,17 +19,30 @@ namespace Proiect.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            var orders = await _context.Orders
-                                       .Include(o => o.Items)
-                                       .ThenInclude(i => i.Product)
-                                       .Where(o => o.UserId == user.Id)
-                                       .OrderByDescending(o => o.Date)
-                                       .ToListAsync();
+            int pageSize = 9;
+            var query = _context.Orders
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .Where(o => o.UserId == user.Id)
+                .OrderByDescending(o => o.Date);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var orders = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Orders/Index/?page";
 
             return View(orders);
         }

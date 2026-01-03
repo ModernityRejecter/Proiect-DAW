@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Google.GenAI.Types;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,7 +18,7 @@ namespace Proiect.Controllers
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _env = env;
 
-        public async Task<IActionResult> Index(string searchString, int? categoryId, string sortOrder)
+        public async Task<IActionResult> Index(string searchString, int? categoryId, string sortOrder, int? page)
         {
             var products = db.Products
                 .Include(p => p.Category)
@@ -51,6 +52,24 @@ namespace Proiect.Controllers
                     break;
             }
 
+            int _perPage = 16;
+            int totalItems = await products.CountAsync();
+
+            var currentPage = page ?? 1;
+            var offset = (currentPage - 1) * _perPage;
+
+            var paginatedProducts = await products.Skip(offset).Take(_perPage).ToListAsync();
+
+            ViewBag.lastPage = (int)Math.Ceiling((double)totalItems / _perPage);
+            ViewBag.currentPage = currentPage;
+
+            string paginationBaseUrl = "/Products/Index/?";
+            if (!string.IsNullOrEmpty(searchString)) paginationBaseUrl += "searchString=" + searchString + "&";
+            if (categoryId.HasValue) paginationBaseUrl += "categoryId=" + categoryId + "&";
+            if (!string.IsNullOrEmpty(sortOrder)) paginationBaseUrl += "sortOrder=" + sortOrder + "&";
+
+            ViewBag.PaginationBaseUrl = paginationBaseUrl + "page";
+
             ViewBag.Categories = await db.Categories.OrderBy(c => c.Name).ToListAsync();
             ViewBag.CurrentSearch = searchString;
             ViewBag.CurrentCategory = categoryId;
@@ -69,15 +88,13 @@ namespace Proiect.Controllers
                 ViewBag.WishlistProductIds = new List<int>();
             }
 
-            return View(await products.ToListAsync());
+            return View(paginatedProducts);
         }
 
-        public async Task<IActionResult> Show(int id)
+        public async Task<IActionResult> Show(int id, int? page)
         {
             var product = await db.Products
                 .Include(p => p.Category)
-                .Include(p => p.Reviews)
-                    .ThenInclude(r => r.User)
                 .Include(p => p.Proposal)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -86,12 +103,32 @@ namespace Proiect.Controllers
                 return NotFound();
             }
 
+            int pageSize = 5;
+            var reviewsQuery = db.Reviews
+                .Include(r => r.User)
+                .Where(r => r.ProductId == id)
+                .OrderByDescending(r => r.Date);
+
+            int totalReviews = await reviewsQuery.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalReviews / pageSize);
+
+            var paginatedReviews = await reviewsQuery
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.ReviewsList = paginatedReviews;
+            ViewBag.TotalReviews = totalReviews;
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = $"/Products/Show/{id}?page";
+
             if (User.Identity.IsAuthenticated)
             {
                 var userId = _userManager.GetUserId(User);
                 var existsInWishlist = await db.WishlistItems
                     .AnyAsync(w => w.Wishlist.UserId == userId && w.ProductId == id);
-
                 ViewBag.IsInWishlist = existsInWishlist;
             }
             else
@@ -102,29 +139,55 @@ namespace Proiect.Controllers
             return View(product);
         }
 
+        //[HttpPost]
+        //[Authorize(Roles = "Admin,Colaborator")]
+        //public IActionResult SoftDelete(int id)
+        //{
+        //    Product? product = db.Products
+        //        .Include(p => p.Proposal)
+        //        .FirstOrDefault(p => p.Id == id);
+
+        //    if (product is null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    if(product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+        //    {
+        //        product.IsActive = false;
+        //        db.SaveChanges();
+        //    }
+        //    else
+        //    {
+        //        TempData["message"] = "Nu aveți dreptul să stergeți produsul altui colaborator";
+        //        TempData["messageType"] = "alert-danger";
+        //    }
+
+        //    return Redirect(Request.Headers.Referer.ToString());
+        //}
+
         [HttpPost]
         [Authorize(Roles = "Admin,Colaborator")]
-        public IActionResult SoftDelete(int id)
+        public async Task<IActionResult> ToggleStatus(int id)
         {
-            Product? product = db.Products
+            Product? product = await db.Products
                 .Include(p => p.Proposal)
-                .FirstOrDefault(p => p.Id == id);
-
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (product is null)
             {
                 return NotFound();
             }
-            if(product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            if (product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
-                product.IsActive = false;
-                db.SaveChanges();
+                product.IsActive = !product.IsActive;
+                await context.SaveChangesAsync();
+                TempData["message"] = $"Produsul {product.Name} este acum {(product.IsActive ? "Activ" : "Inactiv")}.";
+                TempData["messageType"] = "alert-info";
             }
             else
             {
                 TempData["message"] = "Nu aveți dreptul să stergeți produsul altui colaborator";
                 TempData["messageType"] = "alert-danger";
             }
-
             return Redirect(Request.Headers.Referer.ToString());
         }
 
@@ -240,16 +303,80 @@ namespace Proiect.Controllers
         //---------------------------------------------------------------------------
         // metode interne
         [Authorize(Roles = "Colaborator,Admin")]
-        public async Task<IActionResult> MyProducts()
+        public async Task<IActionResult> MyProducts(int? page, string searchString, int? categoryId, string statusFilter, string sortOrder)
         {
             var currentUserId = _userManager.GetUserId(User);
+            int pageSize = 8;
 
-            var myProducts = await db.Products
-                                     .Include(p => p.Category)
-                                     .Include(p => p.Proposal)
-                                     .Where(p => p.Proposal.UserId == currentUserId /*&& p.IsActive == true*/)
-                                     .OrderByDescending(p => p.Id)
-                                     .ToListAsync();
+            var query = db.Products
+                .Include(p => p.Category)
+                .Include(p => p.Proposal)
+                .Where(p => p.Proposal.UserId == currentUserId)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(p => p.Name.Contains(searchString) || p.Description.Contains(searchString));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+            {
+                if (statusFilter == "Active")
+                {
+                    query = query.Where(p => p.IsActive);
+                }
+                else if (statusFilter == "Inactive")
+                {
+                    query = query.Where(p => !p.IsActive);
+                }
+            }
+
+            switch (sortOrder)
+            {
+                case "PriceAsc":
+                    query = query.OrderBy(p => p.Price);
+                    break;
+                case "PriceDesc":
+                    query = query.OrderByDescending(p => p.Price);
+                    break;
+                case "Oldest":
+                    query = query.OrderBy(p => p.Id);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.Id);
+                    break;
+            }
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var myProducts = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Categories = await db.Categories.OrderBy(c => c.Name).ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.CurrentSearch = searchString;
+            ViewBag.CurrentCategory = categoryId;
+            ViewBag.CurrentStatus = statusFilter;
+            ViewBag.CurrentSort = sortOrder;
+
+            string paginationBaseUrl = "/Products/MyProducts/?";
+            if (!string.IsNullOrEmpty(searchString)) paginationBaseUrl += $"searchString={searchString}&";
+            if (categoryId.HasValue) paginationBaseUrl += $"categoryId={categoryId}&";
+            if (!string.IsNullOrEmpty(statusFilter)) paginationBaseUrl += $"statusFilter={statusFilter}&";
+            if (!string.IsNullOrEmpty(sortOrder)) paginationBaseUrl += $"sortOrder={sortOrder}&";
+
+            ViewBag.PaginationBaseUrl = paginationBaseUrl + "page";
 
             return View(myProducts);
         }

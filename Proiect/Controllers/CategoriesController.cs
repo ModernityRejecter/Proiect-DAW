@@ -16,17 +16,30 @@ namespace Proiect.Controllers
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
 
-        public ActionResult Index()
+        public async Task<IActionResult> Index(int? page)
         {
             if (TempData.ContainsKey("message"))
             {
                 ViewBag.message = TempData["message"]?.ToString();
             }
 
-            var categories = from category in db.Categories
-                             orderby category.Name
-                             select category;
+            int pageSize = 40;
+            var query = db.Categories.OrderBy(c => c.Name);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var categories = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Categories/Index/?page";
             ViewBag.Categories = categories;
+
             return View();
         }
 

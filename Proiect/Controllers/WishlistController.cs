@@ -19,15 +19,14 @@ namespace Proiect.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
+            int pageSize = 12;
+
             var wishlist = await _context.Wishlists
-                                         .Include(w => w.Items)
-                                         .ThenInclude(i => i.Product)
-                                            .ThenInclude(p => p.Category)
                                          .FirstOrDefaultAsync(w => w.UserId == user.Id);
 
             if (wishlist == null)
@@ -40,6 +39,26 @@ namespace Proiect.Controllers
                 _context.Wishlists.Add(wishlist);
                 await _context.SaveChangesAsync();
             }
+
+            var query = _context.WishlistItems
+                .Include(i => i.Product)
+                .ThenInclude(p => p.Category)
+                .Where(i => i.WishlistId == wishlist.Id);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var items = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            wishlist.Items = items;
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Wishlist/Index/?page";
 
             return View(wishlist);
         }

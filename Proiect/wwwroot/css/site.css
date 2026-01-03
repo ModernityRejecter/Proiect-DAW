@@ -241,3 +241,16 @@ footer {
     transform: translateY(-5px);
     box-shadow: 0 .5rem 1rem rgba(79, 70, 229, 0.25) !important;
 }
+
+.page-link {
+    color: var(--brand-purple);
+}
+
+    .page-link:hover {
+        color: var(--brand-purple);
+    }
+
+.page-item.active .page-link {
+    background-color: var(--brand-purple);
+    border-color: var(--brand-purple);
+}

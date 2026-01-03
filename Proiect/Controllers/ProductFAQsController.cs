@@ -19,9 +19,11 @@ namespace Proiect.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
             var userId = _userManager.GetUserId(User);
+            int pageSize = 9;
+
             var query = _context.ProductFAQs
                                 .Include(f => f.Product)
                                 .ThenInclude(p => p.Proposal)
@@ -32,7 +34,21 @@ namespace Proiect.Controllers
                 query = query.Where(f => f.Product.Proposal.UserId == userId);
             }
 
-            var faqs = await query.OrderByDescending(f => f.Id).ToListAsync();
+            int totalItems = await query.CountAsync();
+
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var faqs = await query
+                .OrderByDescending(f => f.Id)
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/ProductFAQs/Index/?page";
+
             return View(faqs);
         }
         public async Task<IActionResult> Edit(int id)

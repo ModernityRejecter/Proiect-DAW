@@ -1,0 +1,36 @@
+﻿@{
+    // verificam daca exista variabilele necesare si daca avem mai mult de o pagina
+    // conversie pt a evita erori daca viewbag e null
+    int lastPage = ViewBag.lastPage != null ? (int)ViewBag.lastPage : 1;
+    int currentPage = ViewBag.currentPage != null ? (int)ViewBag.currentPage : 1;
+    string baseUrl = ViewBag.PaginationBaseUrl as string;
+}
+
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        @if (currentPage > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@(baseUrl)=@(currentPage - 1)" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        }
+
+        @for (int i = 1; i <= lastPage; i++)
+        {
+            <li class="page-item @(i == currentPage ? "active" : "")">
+                <a class="page-link" href="@(baseUrl)=@i">@i</a>
+            </li>
+        }
+
+        @if (currentPage < lastPage)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@(baseUrl)=@(currentPage + 1)" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        }
+    </ul>
+</nav>

@@ -1,6 +1,11 @@
 ﻿@model IEnumerable<Proiect.Models.Product>
 @{
     ViewData["Title"] = "Produsele Mele";
+    var categories = ViewBag.Categories as IEnumerable<Proiect.Models.Category>;
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentCategory = ViewBag.CurrentCategory as int?;
+    var currentStatus = ViewBag.CurrentStatus as string;
+    var currentSort = ViewBag.CurrentSort as string;
 }
 
 <div class="container mt-4 mb-5">
@@ -11,17 +16,116 @@
             </h2>
             <p class="text-muted mb-0">Gestionează produsele active și stocurile</p>
         </div>
+        <span class="badge bg-light text-dark border px-3 py-2">Total: @ViewBag.lastPage pagini</span>
     </div>
 
-    @if (TempData["message"] != null)
-    {
-        <div class="alert @(TempData["messageType"] ?? "alert-success") alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            @TempData["message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-light rounded">
+            <form method="get" action="@Url.Action("MyProducts", "Products")" class="row g-3 align-items-end justify-content-end">
 
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Caută</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="searchString" class="form-control border-start-0"
+                               placeholder="Nume produs..." value="@currentSearch">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Categorie</label>
+                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                        <option value="">Toate</option>
+                        @if (categories != null)
+                        {
+                            foreach (var cat in categories)
+                            {
+                                if (currentCategory == cat.Id)
+                                {
+                                    <option value="@cat.Id" selected>@cat.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Status</label>
+                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="All">Toate</option>
+                        @if (currentStatus == "Active")
+                        {
+                            <option value="Active" selected>Active</option>
+                        }
+                        else
+                        {
+                            <option value="Active">Active</option>
+                        }
+                        @if (currentStatus == "Inactive")
+                        {
+                            <option value="Inactive" selected>Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="Inactive">Inactive</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Sortare</label>
+                    <select name="sortOrder" class="form-select" onchange="this.form.submit()">
+                        @if (string.IsNullOrEmpty(currentSort) || currentSort == "Newest")
+                        {
+                            <option value="Newest" selected>Cele mai noi</option>
+                        }
+                        else
+                        {
+                            <option value="Newest">Cele mai noi</option>
+                        }
+
+                        @if (currentSort == "Oldest")
+                        {
+                            <option value="Oldest" selected>Cele mai vechi</option>
+                        }
+                        else
+                        {
+                            <option value="Oldest">Cele mai vechi</option>
+                        }
+                        @if (currentSort == "PriceAsc")
+                        {
+                            <option value="PriceAsc" selected>Preț crescător</option>
+                        }
+                        else
+                        {
+                            <option value="PriceAsc">Preț crescător</option>
+                        }
+                        @if (currentSort == "PriceDesc")
+                        {
+                            <option value="PriceDesc" selected>Preț descrescător</option>
+                        }
+                        else
+                        {
+                            <option value="PriceDesc">Preț descrescător</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        Filtrează
+                    </button>
+                    <a asp-action="MyProducts" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
     @if (!Model.Any())
     {
         <div class="text-center py-5">
@@ -116,12 +220,22 @@
                                         <i class="bi bi-pencil-square me-1"></i> Edit
                                     </a>
 
-                                    <form asp-action="SoftDelete" asp-route-id="@product.Id" method="post" class="w-50">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100"
-                                                onclick="return confirm('Sigur vrei să dezactivezi acest produs? El nu va mai apărea în magazin.');"
-                                                title="Șterge">
-                                            <i class="bi bi-trash me-1"></i> Șterge
-                                        </button>
+                                    <form asp-action="ToggleStatus" asp-route-id="@product.Id" method="post" class="w-50">
+                                        @if (product.IsActive)
+                                        {
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                                    onclick="return confirm('Sigur vrei să dezactivezi acest produs? El nu va mai apărea în magazin.');"
+                                                    title="Dezactivează">
+                                                <i class="bi bi-eye-slash me-1"></i> Șterge
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-outline-success btn-sm w-100"
+                                                    title="Activează">
+                                                <i class="bi bi-eye me-1"></i> Activează
+                                            </button>
+                                        }
                                     </form>
                                 </div>
                             </div>
@@ -132,7 +246,7 @@
             }
         </div>
     }
-
+    <partial name="_Pagination" />
     <div class="mt-4">
         <a href="javascript:history.back()" class="btn btn-secondary">
             <i class="bi bi-arrow-left me-1"></i> Înapoi
