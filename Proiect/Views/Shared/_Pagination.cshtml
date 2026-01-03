@@ -8,11 +8,14 @@
 
 <nav aria-label="Page navigation" class="mt-4">
     <ul class="pagination justify-content-center">
-        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-            <a class="page-link" href="@(baseUrl)=@(currentPage - 1)" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
+        @if (currentPage > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@(baseUrl)=@(currentPage - 1)" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        }
 
         @for (int i = 1; i <= lastPage; i++)
         {
@@ -21,10 +24,13 @@
             </li>
         }
 
-        <li class="page-item @(currentPage == lastPage ? "disabled" : "")">
-            <a class="page-link" href="@(baseUrl)=@(currentPage + 1)" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
+        @if (currentPage < lastPage)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@(baseUrl)=@(currentPage + 1)" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        }
     </ul>
 </nav>
