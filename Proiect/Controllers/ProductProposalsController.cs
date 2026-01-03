@@ -34,13 +34,31 @@ namespace Proiect.Controllers
         //}
 
         [Authorize(Roles = "Colaborator,Admin")]
-        public async Task<IActionResult> MyProposals()
+        [Authorize(Roles = "Colaborator,Admin")]
+        public async Task<IActionResult> MyProposals(int? page)
         {
             var currentUserId = _userManager.GetUserId(User);
+            int pageSize = 8;
 
-            var proposals = await GetOwnProposals();
+            var query = db.ProductProposals
+                .Where(op => op.UserId == currentUserId)
+                .Include(op => op.Category)
+                .Include(op => op.Feedbacks)
+                .OrderByDescending(op => op.Id);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var proposals = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             ViewBag.Proposals = proposals;
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/ProductProposals/MyProposals/?page";
 
             if (TempData.ContainsKey("message"))
             {

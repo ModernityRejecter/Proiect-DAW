@@ -152,6 +152,7 @@
             }
         </div>
     }
+    <partial name="_Pagination" />
 </div>
 
 <style>
@@ -159,29 +160,27 @@
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
-        .hover-effect:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-        }
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
 
     .object-fit-cover {
         object-fit: cover;
     }
 
-    /* --- Stiluri Noi pentru butonul de Wishlist --- */
     .wishlist-btn {
-        width: 45px; /* Dimensiune puțin mai mică decât în Show (45px) pentru a se potrivi pe card */
+        width: 45px; 
         height: 45px;
-        transition: transform 0.2s ease; /* Animația de scalare */
-        font-size: 1.3rem; /* Mărimea inimioarei */
+        transition: transform 0.2s ease;
+        font-size: 1.3rem;
     }
 
-        .wishlist-btn:hover {
-            transform: scale(1.15); /* Mărește butonul cu 15% la hover */
-        }
+    .wishlist-btn:hover {
+        transform: scale(1.15);
+    }
 
-            /* Asigurăm că inima roșie rămâne roșie și la hover pe buton */
-            .wishlist-btn:hover i.text-danger {
-                color: #dc3545 !important;
-            }
+    .wishlist-btn:hover i.text-danger {
+        color: #dc3545 !important;
+    }
 </style>

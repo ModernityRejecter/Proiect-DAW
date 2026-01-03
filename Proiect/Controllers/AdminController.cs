@@ -39,9 +39,19 @@ namespace Proiect.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> ManageUsers()
+        public async Task<IActionResult> ManageUsers(int? page)
         {
-            var users = await _userManager.Users.ToListAsync();
+            int pageSize = 16;
+            var query = _userManager.Users.OrderBy(u => u.Email);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var users = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             var userRoles = new Dictionary<string, string>();
             foreach (var user in users)
@@ -52,6 +62,10 @@ namespace Proiect.Controllers
 
             ViewBag.UserRoles = userRoles;
             ViewBag.AllRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Admin/ManageUsers/?page";
 
             return View(users);
         }
@@ -90,13 +104,27 @@ namespace Proiect.Controllers
             return RedirectToAction("ManageUsers");
         }
 
-        public async Task<IActionResult> ManageReviews()
+        public async Task<IActionResult> ManageReviews(int? page)
         {
-            var reviews = await _context.Reviews
-                                        .Include(r => r.User)
-                                        .Include(r => r.Product)
-                                        .OrderByDescending(r => r.Date)
-                                        .ToListAsync();
+            int pageSize = 9;
+            var query = _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Product)
+                .OrderByDescending(r => r.Date);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var reviews = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Admin/ManageReviews/?page";
+
             return View(reviews);
         }
 
@@ -113,14 +141,29 @@ namespace Proiect.Controllers
             return RedirectToAction("ManageReviews");
         }
 
-        public async Task<IActionResult> ManageProposals()
+        public async Task<IActionResult> ManageProposals(int? page)
         {
-            var proposals = await _context.ProductProposals
-                                          .Include(p => p.User)
-                                          .Include(p => p.Category)
-                                          .Include(op => op.Feedbacks)
-                                          .Where(p => p.Status == "Pending")
-                                          .ToListAsync();
+            int pageSize = 8;
+            var query = _context.ProductProposals
+                                .Include(p => p.User)
+                                .Include(p => p.Category)
+                                .Include(op => op.Feedbacks)
+                                .Where(p => p.Status == "Pending")
+                                .OrderByDescending(p => p.Id);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var proposals = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Admin/ManageProposals/?page";
+
             return View(proposals);
         }
 
@@ -179,8 +222,10 @@ namespace Proiect.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> AllProposals(string status)
+        [HttpGet]
+        public async Task<IActionResult> AllProposals(string status, int? page)
         {
+            int pageSize = 16;
             var proposals = _context.ProductProposals
                                     .Include(p => p.User)
                                     .Include(p => p.Category)
@@ -191,20 +236,48 @@ namespace Proiect.Controllers
                 proposals = proposals.Where(p => p.Status == status);
             }
 
-            var result = await proposals.OrderByDescending(p => p.Id).ToListAsync();
+            proposals = proposals.OrderByDescending(p => p.Id);
+
+            int totalItems = await proposals.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var result = await proposals
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             ViewBag.CurrentFilter = status;
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+
+            string baseUrl = "/Admin/AllProposals/?";
+            if (!string.IsNullOrEmpty(status)) baseUrl += $"status={status}&";
+            ViewBag.PaginationBaseUrl = baseUrl + "page";
 
             return View(result);
         }
-        public async Task<IActionResult> ManageOrders()
+        public async Task<IActionResult> ManageOrders(int? page)
         {
-            var orders = await _context.Orders
-                .Include(o => o.User)
-                .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-                .OrderByDescending(o => o.Date)
+            int pageSize = 9;
+            var query = _context.Orders
+                    .Include(o => o.User)
+                    .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                    .OrderByDescending(o => o.Date);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var orders = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            ViewBag.CurrentPage = currentPage;
+            ViewBag.LastPage = totalPages;
+            ViewBag.PaginationBaseUrl = "/Admin/ManageOrders/?page";
 
             return View(orders);
         }
@@ -222,14 +295,28 @@ namespace Proiect.Controllers
             }
             return RedirectToAction("ManageOrders");
         }
-        public async Task<IActionResult> ManageProducts()
+        public async Task<IActionResult> ManageProducts(int? page)
         {
-            var products = await _context.Products
-                                         .Include(p => p.Category)
-                                         .Include(p => p.Proposal)
-                                         .ThenInclude(pr => pr.User)
-                                         .OrderByDescending(p => p.Id)
-                                         .ToListAsync();
+            int pageSize = 9;
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Proposal)
+                .ThenInclude(pr => pr.User)
+                .OrderByDescending(p => p.Id);
+
+            int totalItems = await query.CountAsync();
+            int currentPage = page ?? 1;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var products = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.lastPage = totalPages;
+            ViewBag.currentPage = currentPage;
+            ViewBag.PaginationBaseUrl = "/Admin/ManageProducts/?page";
+
             return View(products);
         }
 

@@ -5,69 +5,100 @@
     var allRoles = ViewBag.AllRoles as List<string>;
 }
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-brand mb-0">Gestionare Utilizatori</h2>
+        <span class="badge bg-light text-dark border px-3 py-2">Total: @Model.Count()</span>
     </div>
 
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+        @foreach (var user in Model)
+        {
+            var currentRole = userRoles != null && userRoles.ContainsKey(user.Id) ? userRoles[user.Id] : "User";
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4 py-3 border-0">Email</th>
-                            <th class="py-3 border-0">Nume</th>
-                            <th class="py-3 border-0">Prenume</th>
-                            <th class="py-3 border-0" style="min-width: 200px;">Rol</th>
-                            <th class="pe-4 py-3 border-0 text-end">Acțiuni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in Model)
-                        {
-                            var currentRole = userRoles != null && userRoles.ContainsKey(user.Id) ? userRoles[user.Id] : "User";
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 hover-effect">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-brand-soft rounded-circle d-flex align-items-center justify-content-center me-3 text-brand fw-bold flex-shrink-0" style="width: 45px; height: 45px;">
+                                <i class="bi bi-person-fill fs-5"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h6 class="fw-bold mb-0 text-dark text-truncate" title="@user.Email">@user.Email</h6>
+                                <small class="text-muted">Utilizator</small>
+                            </div>
+                        </div>
 
-                            <tr>
-                                <td class="ps-4 fw-medium text-brand">@user.Email</td>
-                                <td>@user.LastName</td>
-                                <td>@user.FirstName</td>
-                                <td>
-                                    <form asp-action="UpdateUserRole" method="post" class="d-flex gap-2 align-items-center">
-                                        <input type="hidden" name="id" value="@user.Id" />
-                                        <select name="newRole" class="form-select form-select-sm border-0 bg-light fw-bold text-dark" style="cursor: pointer;" onchange="this.form.submit()">
-                                            @foreach (var role in allRoles)
-                                            {
-                                                if (role == currentRole)
-                                                {
-                                                    <option value="@role" selected>@role</option>
-                                                }
-                                                else
-                                                {
-                                                    <option value="@role">@role</option>
-                                                }
-                                            }
-                                        </select>
-                                    </form>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Sigur ștergi acest user?');" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Șterge utilizator">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                <span class="text-muted small">Nume:</span>
+                                <span class="fw-medium text-dark">@user.LastName</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                <span class="text-muted small">Prenume:</span>
+                                <span class="fw-medium text-dark">@user.FirstName</span>
+                            </div>
+                        </div>
+
+                        <form asp-action="UpdateUserRole" method="post">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <label class="small text-muted fw-bold mb-1">Rol curent:</label>
+                            <select name="newRole" class="form-select form-select-sm bg-light border-0 fw-bold text-dark cursor-pointer" onchange="this.form.submit()">
+                                @foreach (var role in allRoles)
+                                {
+                                    if (role == currentRole)
+                                    {
+                                        <option value="@role" selected>@role</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@role">@role</option>
+                                    }
+                                }
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                        <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Sigur ștergi acest user?');">
+                            <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+                                <i class="bi bi-trash3-fill me-1"></i> Șterge Contul
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
     </div>
+
+    <partial name="_Pagination" />
+
     <div class="mt-4">
         <a href="javascript:history.back()" class="btn btn-secondary">
             <i class="bi bi-arrow-left me-1"></i> Înapoi
         </a>
     </div>
 </div>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .hover-effect {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+    .bg-brand-soft {
+        background-color: rgba(79, 70, 229, 0.12);
+    }
+
+    .text-brand {
+        color: #4f46e5;
+    }
+</style>

@@ -108,7 +108,7 @@
                             }
                         </div>
                         <span class="text-muted small fw-medium">
-                            (@(Model.Rating?.ToString("0.0") ?? "0.0") din @Model.Reviews.Count recenzii)
+                            (@(Model.Rating?.ToString("0.0") ?? "0.0") din @ViewBag.TotalReviews recenzii)
                         </span>
                     </div>
 
@@ -225,7 +225,7 @@
                 </div>
             }
 
-            @if (!Model.Reviews.Any())
+            @if (ViewBag.TotalReviews == 0)
             {
                 <div class="text-center py-5">
                     <i class="bi bi-chat-square-dots text-muted opacity-25" style="font-size: 4rem;"></i>
@@ -235,7 +235,7 @@
             else
             {
                 <div class="d-flex flex-column gap-4">
-                    @foreach (var review in Model.Reviews.OrderByDescending(r => r.Date))
+                    @foreach (var review in ViewBag.ReviewsList)
                     {
                         <div class="card border-0 shadow-sm rounded-4 h-100">
                             <div class="card-body p-4">
@@ -286,7 +286,6 @@
                                         }
                                         else
                                         {
-
                                             <i class="bi bi-star text-muted opacity-25"></i>
                                         }
                                     }
@@ -298,6 +297,8 @@
                         </div>
                     }
                 </div>
+
+                <partial name="_Pagination" />
             }
         </div>
     </div>
