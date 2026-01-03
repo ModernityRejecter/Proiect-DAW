@@ -3,13 +3,69 @@
     ViewData["Title"] = "Administrare Useri";
     var userRoles = ViewBag.UserRoles as Dictionary<string, string>;
     var allRoles = ViewBag.AllRoles as List<string>;
+
+    var searchString = ViewBag.CurrentSearch as string;
+    var activeRoleFilter = ViewBag.CurrentRole as string;
 }
 
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-brand mb-0">Gestionare Utilizatori</h2>
-        <span class="badge bg-light text-dark border px-3 py-2">Total: @Model.Count()</span>
+        <span class="badge bg-light text-dark border px-3 py-2">Total: @ViewBag.lastPage pagini</span>
     </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-light rounded">
+            <form method="get" action="@Url.Action("ManageUsers", "Admin")" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Caută Utilizator</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="searchString" class="form-control border-start-0"
+                               placeholder="Email, Nume sau Prenume..." value="@searchString">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Filtrează după Rol</label>
+                    <select name="roleFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="All">Toate Rolurile</option>
+                        @foreach (var role in allRoles)
+                        {
+                            if (activeRoleFilter == role)
+                            {
+                                <option value="@role" selected>@role</option>
+                            }
+                            else
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        Filtrează
+                    </button>
+                    <a asp-action="ManageUsers" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                <i class="bi bi-person-x fs-1 text-muted"></i>
+            </div>
+            <h4 class="text-muted">Nu am găsit utilizatori conform criteriilor.</h4>
+            <a asp-action="ManageUsers" class="btn btn-outline-primary mt-3">Vezi toți utilizatorii</a>
+        </div>
+    }
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
         @foreach (var user in Model)

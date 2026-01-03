@@ -34,17 +34,36 @@ namespace Proiect.Controllers
         //}
 
         [Authorize(Roles = "Colaborator,Admin")]
-        [Authorize(Roles = "Colaborator,Admin")]
-        public async Task<IActionResult> MyProposals(int? page)
+        public async Task<IActionResult> MyProposals(int? page, string searchString, string statusFilter, string sortOrder)
         {
             var currentUserId = _userManager.GetUserId(User);
             int pageSize = 8;
 
             var query = db.ProductProposals
-                .Where(op => op.UserId == currentUserId)
                 .Include(op => op.Category)
                 .Include(op => op.Feedbacks)
-                .OrderByDescending(op => op.Id);
+                .Where(op => op.UserId == currentUserId)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(p => p.Name.Contains(searchString) || p.Description.Contains(searchString));
+            }
+
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+            {
+                query = query.Where(p => p.Status == statusFilter);
+            }
+
+            switch (sortOrder)
+            {
+                case "Oldest":
+                    query = query.OrderBy(p => p.Id);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.Id);
+                    break;
+            }
 
             int totalItems = await query.CountAsync();
             int currentPage = page ?? 1;
@@ -58,7 +77,16 @@ namespace Proiect.Controllers
             ViewBag.Proposals = proposals;
             ViewBag.lastPage = totalPages;
             ViewBag.currentPage = currentPage;
-            ViewBag.PaginationBaseUrl = "/ProductProposals/MyProposals/?page";
+            ViewBag.CurrentSearch = searchString;
+            ViewBag.CurrentStatus = statusFilter;
+            ViewBag.CurrentSort = sortOrder;
+
+            string paginationBaseUrl = "/ProductProposals/MyProposals/?";
+            if (!string.IsNullOrEmpty(searchString)) paginationBaseUrl += $"searchString={searchString}&";
+            if (!string.IsNullOrEmpty(statusFilter)) paginationBaseUrl += $"statusFilter={statusFilter}&";
+            if (!string.IsNullOrEmpty(sortOrder)) paginationBaseUrl += $"sortOrder={sortOrder}&";
+
+            ViewBag.PaginationBaseUrl = paginationBaseUrl + "page";
 
             if (TempData.ContainsKey("message"))
             {

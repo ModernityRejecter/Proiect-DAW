@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Google.GenAI.Types;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -138,29 +139,55 @@ namespace Proiect.Controllers
             return View(product);
         }
 
+        //[HttpPost]
+        //[Authorize(Roles = "Admin,Colaborator")]
+        //public IActionResult SoftDelete(int id)
+        //{
+        //    Product? product = db.Products
+        //        .Include(p => p.Proposal)
+        //        .FirstOrDefault(p => p.Id == id);
+
+        //    if (product is null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    if(product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+        //    {
+        //        product.IsActive = false;
+        //        db.SaveChanges();
+        //    }
+        //    else
+        //    {
+        //        TempData["message"] = "Nu aveți dreptul să stergeți produsul altui colaborator";
+        //        TempData["messageType"] = "alert-danger";
+        //    }
+
+        //    return Redirect(Request.Headers.Referer.ToString());
+        //}
+
         [HttpPost]
         [Authorize(Roles = "Admin,Colaborator")]
-        public IActionResult SoftDelete(int id)
+        public async Task<IActionResult> ToggleStatus(int id)
         {
-            Product? product = db.Products
+            Product? product = await db.Products
                 .Include(p => p.Proposal)
-                .FirstOrDefault(p => p.Id == id);
-
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (product is null)
             {
                 return NotFound();
             }
-            if(product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            if (product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
-                product.IsActive = false;
-                db.SaveChanges();
+                product.IsActive = !product.IsActive;
+                await context.SaveChangesAsync();
+                TempData["message"] = $"Produsul {product.Name} este acum {(product.IsActive ? "Activ" : "Inactiv")}.";
+                TempData["messageType"] = "alert-info";
             }
             else
             {
                 TempData["message"] = "Nu aveți dreptul să stergeți produsul altui colaborator";
                 TempData["messageType"] = "alert-danger";
             }
-
             return Redirect(Request.Headers.Referer.ToString());
         }
 
@@ -276,7 +303,7 @@ namespace Proiect.Controllers
         //---------------------------------------------------------------------------
         // metode interne
         [Authorize(Roles = "Colaborator,Admin")]
-        public async Task<IActionResult> MyProducts(int? page)
+        public async Task<IActionResult> MyProducts(int? page, string searchString, int? categoryId, string statusFilter, string sortOrder)
         {
             var currentUserId = _userManager.GetUserId(User);
             int pageSize = 8;
@@ -285,7 +312,45 @@ namespace Proiect.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Proposal)
                 .Where(p => p.Proposal.UserId == currentUserId)
-                .OrderByDescending(p => p.Id);
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(p => p.Name.Contains(searchString) || p.Description.Contains(searchString));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+            {
+                if (statusFilter == "Active")
+                {
+                    query = query.Where(p => p.IsActive);
+                }
+                else if (statusFilter == "Inactive")
+                {
+                    query = query.Where(p => !p.IsActive);
+                }
+            }
+
+            switch (sortOrder)
+            {
+                case "PriceAsc":
+                    query = query.OrderBy(p => p.Price);
+                    break;
+                case "PriceDesc":
+                    query = query.OrderByDescending(p => p.Price);
+                    break;
+                case "Oldest":
+                    query = query.OrderBy(p => p.Id);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.Id);
+                    break;
+            }
 
             int totalItems = await query.CountAsync();
             int currentPage = page ?? 1;
@@ -296,9 +361,22 @@ namespace Proiect.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
+            ViewBag.Categories = await db.Categories.OrderBy(c => c.Name).ToListAsync();
+
             ViewBag.lastPage = totalPages;
             ViewBag.currentPage = currentPage;
-            ViewBag.PaginationBaseUrl = "/Products/MyProducts/?page";
+            ViewBag.CurrentSearch = searchString;
+            ViewBag.CurrentCategory = categoryId;
+            ViewBag.CurrentStatus = statusFilter;
+            ViewBag.CurrentSort = sortOrder;
+
+            string paginationBaseUrl = "/Products/MyProducts/?";
+            if (!string.IsNullOrEmpty(searchString)) paginationBaseUrl += $"searchString={searchString}&";
+            if (categoryId.HasValue) paginationBaseUrl += $"categoryId={categoryId}&";
+            if (!string.IsNullOrEmpty(statusFilter)) paginationBaseUrl += $"statusFilter={statusFilter}&";
+            if (!string.IsNullOrEmpty(sortOrder)) paginationBaseUrl += $"sortOrder={sortOrder}&";
+
+            ViewBag.PaginationBaseUrl = paginationBaseUrl + "page";
 
             return View(myProducts);
         }

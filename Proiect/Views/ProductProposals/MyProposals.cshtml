@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "Propunerile Mele";
     var currentUserId = UserManager.GetUserId(User);
+
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentStatus = ViewBag.CurrentStatus as string;
+    var currentSort = ViewBag.CurrentSort as string;
 }
 
 <div class="container mt-4">
@@ -10,11 +14,89 @@
         <h2 class="mb-0 fw-bold text-brand">
             <i class="bi bi-person-workspace me-2"></i>Propunerile Mele
         </h2>
-        <a asp-action="New" class="btn btn-primary shadow-sm">
-            <i class="bi bi-plus-lg"></i> Adaugă Propunere
-        </a>
+
+        <div>
+            <a asp-action="New" class="btn btn-primary shadow-sm me-2">
+                <i class="bi bi-plus-lg"></i> Adaugă Propunere
+            </a>
+            <span class="badge bg-light text-dark border px-3 py-2">Pagina @ViewBag.currentPage din @ViewBag.lastPage</span>
+        </div>
     </div>
 
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-light rounded">
+            <form method="get" action="@Url.Action("MyProposals", "ProductProposals")" class="row g-3 align-items-end justify-content-end">
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Caută</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="searchString" class="form-control border-start-0"
+                               placeholder="Nume sau descriere..." value="@currentSearch">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Status</label>
+                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="All">Toate</option>
+
+                        @if (currentStatus == "Pending")
+                        {
+                            <option value="Pending" selected>În așteptare</option>
+                        }
+                        else
+                        {
+                            <option value="Pending">În așteptare</option>
+                        }
+
+                        @if (currentStatus == "Approved")
+                        {
+                            <option value="Approved" selected>Aprobat</option>
+                        }
+                        else
+                        {
+                            <option value="Approved">Aprobat</option>
+                        }
+
+                        @if (currentStatus == "Rejected")
+                        {
+                            <option value="Rejected" selected>Respins</option>
+                        }
+                        else
+                        {
+                            <option value="Rejected">Respins</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Sortare</label>
+                    <select name="sortOrder" class="form-select" onchange="this.form.submit()">
+                        @if (string.IsNullOrEmpty(currentSort) || currentSort == "Newest")
+                        {
+                            <option value="Newest" selected>Cele mai noi</option>
+                            <option value="Oldest">Cele mai vechi</option>
+                        }
+                        else
+                        {
+                            <option value="Newest">Cele mai noi</option>
+                            <option value="Oldest" selected>Cele mai vechi</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        Filtrează
+                    </button>
+                    <a asp-action="MyProposals" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
     @if (ViewBag.Proposals == null || ((IEnumerable<Proiect.Models.ProductProposal>)ViewBag.Proposals).Count() == 0)
     {
         <div class="text-center py-5">

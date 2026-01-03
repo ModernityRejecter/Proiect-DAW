@@ -2,22 +2,87 @@
 
 @{
     ViewData["Title"] = "Gestionare Produse";
+    var categories = ViewBag.Categories as IEnumerable<Proiect.Models.Category>;
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentCategory = ViewBag.CurrentCategory as int?;
+    var currentStatus = ViewBag.CurrentStatus as string;
 }
 
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-brand mb-0">Gestionare Produse</h2>
-        <span class="badge bg-light text-dark border px-3 py-2">Total: @Model.Count()</span>
+        <span class="badge bg-light text-dark border px-3 py-2">Total: @ViewBag.lastPage pagini</span>
     </div>
 
-    @if (TempData["message"] != null)
-    {
-        <div class="alert @(TempData["messageType"] ?? "alert-success") alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            @TempData["message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-light rounded">
+            <form method="get" action="@Url.Action("ManageProducts", "Admin")" class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Caută Produs</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="searchString" class="form-control border-start-0"
+                               placeholder="Nume produs..." value="@currentSearch">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Categorie</label>
+                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                        <option value="">Toate Categoriile</option>
+                        @if (categories != null)
+                        {
+                            foreach (var cat in categories)
+                            {
+                                if (currentCategory == cat.Id)
+                                {
+                                    <option value="@cat.Id" selected>@cat.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-bold text-uppercase">Status</label>
+                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="">Toate</option>
+                        @if (currentStatus == "Active")
+                        {
+                            <option value="Active" selected>Active</option>
+                        }
+                        else
+                        {
+                            <option value="Active">Active</option>
+                        }
+
+                        @if (currentStatus == "Inactive")
+                        {
+                            <option value="Inactive" selected>Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="Inactive">Inactive</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        Filtrează
+                    </button>
+                    <a asp-action="ManageProducts" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Reset
+                    </a>
+                </div>
+            </form>
         </div>
-    }
+    </div>
 
     @if (!Model.Any())
     {
@@ -103,7 +168,7 @@
                                     </a>
                                 </div>
 
-                                <form asp-action="ToggleProductStatus" asp-route-id="@item.Id" method="post">
+                                <form asp-controller="Products" asp-action="ToggleStatus" asp-route-id="@item.Id" method="post">
                                     @if (item.IsActive)
                                     {
                                         <button type="submit" class="btn btn-danger w-100 btn-sm bg-opacity-10">
