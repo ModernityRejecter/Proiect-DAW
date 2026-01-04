@@ -128,8 +128,30 @@ namespace Proiect.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user != null)
             {
+                // gasim toate propunerile
+                var userProposals = await _context.ProductProposals
+                                            .Where(p => p.UserId == id)
+                                            .ToListAsync();
+
+                // verificam daca exista produs legat de fiecare propunere
+                foreach (var proposal in userProposals)
+                {
+                    var linkedProduct = await _context.Products
+                                                .FirstOrDefaultAsync(p => p.ProposalId == proposal.Id);
+
+                    // daca exista produs, rupem legatura si dezactivam produsul
+                    if (linkedProduct != null)
+                    {
+                        linkedProduct.ProposalId = null;
+                        linkedProduct.IsActive = false; 
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
                 await _userManager.DeleteAsync(user);
-                TempData["message"] = "Utilizatorul a fost șters.";
+
+                TempData["message"] = "Utilizatorul a fost șters, iar produsele asociate au fost dezactivate.";
             }
             return RedirectToAction("ManageUsers");
         }
@@ -198,6 +220,11 @@ namespace Proiect.Controllers
             if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
             {
                 query = query.Where(p => p.Status == statusFilter);
+            }
+
+            if (string.IsNullOrEmpty(statusFilter))
+            {
+                query = query.Where(p => p.Status == "Pending" || p.Status == "Rejected");
             }
 
             switch (sortOrder)
