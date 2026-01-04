@@ -25,7 +25,7 @@ A robust e-commerce solution built with **ASP.NET Core MVC**, featuring a multi-
 
 ### Prerequisites
 
-* [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+* [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 * [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) or LocalDB
 * A **Google Gemini API Key** (Get it from [Google AI Studio](https://aistudio.google.com/))
 
