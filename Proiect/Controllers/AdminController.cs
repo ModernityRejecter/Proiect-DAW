@@ -217,6 +217,11 @@ namespace Proiect.Controllers
                                          p.Description.Contains(searchString));
             }
 
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
+            {
+                query = query.Where(p => p.Status == statusFilter);
+            }
+
             if (string.IsNullOrEmpty(statusFilter))
             {
                 query = query.Where(p => p.Status == "Pending" || p.Status == "Rejected");
