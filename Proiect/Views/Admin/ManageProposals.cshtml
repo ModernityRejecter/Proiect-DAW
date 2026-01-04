@@ -19,15 +19,6 @@
         <span class="badge bg-light text-dark border px-3 py-2">Total: @ViewBag.lastPage pagini</span>
     </div>
 
-    @if (TempData["message"] != null)
-    {
-        <div class="alert @(TempData["messageType"] ?? "alert-success") alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            @TempData["message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body bg-light rounded">
             <form method="get" action="@Url.Action("ManageProposals", "Admin")" class="row g-3 align-items-end justify-content-end">
@@ -43,7 +34,7 @@
 
                 <div class="col-md-3">
                     <label class="form-label small text-muted fw-bold text-uppercase">Status</label>
-                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
                         <option value="All">Toate</option>
 
                         @if (currentStatus == "Pending")

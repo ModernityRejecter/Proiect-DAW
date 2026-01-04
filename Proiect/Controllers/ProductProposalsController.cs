@@ -333,18 +333,34 @@ namespace Proiect.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin,Colaborator")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            ProductProposal? proposal = db.ProductProposals.Find(id);
-            //nu cred ca este posibil sa fie null vreodata
-            if(proposal is null)
+            var proposal = await db.ProductProposals
+                                    .Include(p => p.Feedbacks)
+                                    .FirstOrDefaultAsync(p => p.Id == id);
+            bool shouldDeleteImageFile = true;
+
+            if (proposal == null)
             {
                 return NotFound();
             }
-            
-            if(proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+
+            if (proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
-                if(proposal.ImagePath is not null || proposal.ImagePath != "")
+                var linkedProduct = await db.Products.FirstOrDefaultAsync(p => p.ProposalId == proposal.Id);
+                if (linkedProduct != null)
+                {
+                    linkedProduct.ProposalId = null;
+                    linkedProduct.IsActive = false;
+                    shouldDeleteImageFile = false;
+                }
+
+                if (proposal.Feedbacks != null && proposal.Feedbacks.Any())
+                {
+                    db.ProposalFeedbacks.RemoveRange(proposal.Feedbacks);
+                }
+
+                if (shouldDeleteImageFile && !string.IsNullOrEmpty(proposal.ImagePath))
                 {
                     var filePath = Path.Combine(_env.WebRootPath, proposal.ImagePath.TrimStart('/').Replace('/', '\\'));
                     if (System.IO.File.Exists(filePath))
@@ -352,9 +368,11 @@ namespace Proiect.Controllers
                         System.IO.File.Delete(filePath);
                     }
                 }
+
                 db.ProductProposals.Remove(proposal);
-                db.SaveChanges();
-                TempData["message"] = "Propunerea a fost stearsă";
+                await db.SaveChangesAsync();
+
+                TempData["message"] = "Propunerea a fost stearsa";
                 TempData["messageType"] = "alert-success";
             }
             else
@@ -362,6 +380,7 @@ namespace Proiect.Controllers
                 TempData["message"] = "Nu dețineți drepturile necesare ca să ștergeți propunerea altui utilizator";
                 TempData["messageType"] = "alert-danger";
             }
+
             return Redirect(Request.Headers.Referer.ToString());
         }
 

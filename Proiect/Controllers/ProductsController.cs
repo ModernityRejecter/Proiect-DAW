@@ -176,7 +176,9 @@ namespace Proiect.Controllers
             {
                 return NotFound();
             }
-            if (product.Proposal.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            string? proposalUserId = product.Proposal?.UserId;
+            string currentUserId = _userManager.GetUserId(User);
+            if (User.IsInRole("Admin") || (proposalUserId != null && proposalUserId == currentUserId))
             {
                 product.IsActive = !product.IsActive;
                 await context.SaveChangesAsync();
@@ -206,6 +208,21 @@ namespace Proiect.Controllers
             }
             product.Categ = GetAllCategories();
 
+            if (product.Proposal == null)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    TempData["message"] = "Acest produs nu mai are o propunere asociată (autor șters). Editarea directă nu este implementată încă.";
+                    TempData["messageType"] = "alert-warning";
+                    return RedirectToAction("Show", new { id = product.Id });
+                }
+                else
+                {
+                    TempData["message"] = "Acest produs nu mai poate fi modificat deoarece autorul a fost șters.";
+                    TempData["messageType"] = "alert-danger";
+                    return RedirectToAction("MyProducts");
+                }
+            }
             if (product.Proposal.UserId == _userManager.GetUserId(User))
             {
 
