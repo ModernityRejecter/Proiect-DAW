@@ -207,18 +207,21 @@
                                     <i class="bi bi-eye"></i> Detalii
                                 </a>
 
-                                <div class="d-flex gap-2">
-                                    <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
-                                        <button type="submit" class="btn btn-outline-success btn-sm w-100" title="Aprobă și Publică">
-                                            <i class="bi bi-check-lg"></i> Aprobă
-                                        </button>
-                                    </form>
-                                    <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100" title="Respinge Propunerea">
-                                            <i class="bi bi-x-lg"></i> Respinge
-                                        </button>
-                                    </form>
-                                </div>
+                                @if (item.Status == "Pending")
+                                {
+                                    <div class="d-flex gap-2">
+                                        <form asp-action="ApproveProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                            <button type="submit" class="btn btn-outline-success btn-sm w-100" title="Aprobă și Publică">
+                                                <i class="bi bi-check-lg"></i> Aprobă
+                                            </button>
+                                        </form>
+                                        <form asp-action="RejectProposal" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100" title="Respinge Propunerea">
+                                                <i class="bi bi-x-lg"></i> Respinge
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
