@@ -15,7 +15,7 @@ A robust e-commerce solution built with **ASP.NET Core MVC**, featuring a multi-
 
 ## Tech Stack
 
-* **Backend**: .NET 8.0 (ASP.NET Core MVC)
+* **Backend**: .NET 9.0 (ASP.NET Core MVC)
 * **Database**: SQL Server with Entity Framework Core
 * **AI Service**: Google Gemini API (via `Google.GenerativeAI` SDK)
 * **Identity**: ASP.NET Core Identity (Roles: Admin, Colab, User)
